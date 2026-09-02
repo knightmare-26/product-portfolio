@@ -1,0 +1,10 @@
+# Internal notes — not part of the published site
+README.md
+assets/README.md
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/

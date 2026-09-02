@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CS-01 · Spotify "Nearby" — Elijah D'Souza</title>
+  <meta name="description" content="A self-initiated product case study: blending personal music taste with local context in one new Spotify discovery surface." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231F5B43'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='16' fill='white' text-anchor='middle'%3EE%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <a class="skip" href="#cs">Skip to case study</a>
+
+  <header class="nav">
+    <div class="wrap nav__inner">
+      <a class="nav__mark" href="./index.html">Elijah&nbsp;<b>D'Souza</b></a>
+      <nav class="nav__links" aria-label="Primary">
+        <a href="./index.html#work">work</a>
+        <a href="./index.html#process">process</a>
+        <a class="is-cta" href="./index.html#contact">contact</a>
+      </nav>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle colour theme">theme</button>
+    </div>
+  </header>
+
+  <main id="cs">
+    <section class="wrap cs-hero">
+      <a class="cs-back" href="./index.html#work">← All work</a>
+      <p class="eyebrow" style="margin-top:1.5rem">Case study CS-01</p>
+      <h1>Spotify "Nearby" — context-aware local music discovery</h1>
+      <p class="lead">Spotify knows your taste. It doesn't know you just landed in Barcelona. This is a self-initiated exploration of what closing that gap looks like — as one new surface, not a redesign.</p>
+    </section>
+
+    <section class="wrap section" style="border-top:1px solid var(--hairline)">
+      <div class="cs-layout">
+
+        <dl class="cs-meta">
+          <div><dt>Type</dt><dd>Self-initiated concept study</dd></div>
+          <div><dt>When</dt><dd>2025</dd></div>
+          <div><dt>My role</dt><dd>Problem framing, strategy, MVP scope, recommendation model, mockups</dd></div>
+          <div><dt>Deliverables</dt><dd>Written case study + interactive mockup</dd></div>
+          <div><dt>Links</dt><dd><a href="./spotify-nearby-mockup.html" target="_blank" rel="noopener">Interactive mockup ↗</a></dd></div>
+        </dl>
+
+        <div class="cs-body">
+          <blockquote>This is a hypothetical exploration, not a real Spotify initiative. Every user segment, weight, and mockup below is my own reasoning and design work — not internal Spotify data.</blockquote>
+
+          <h2>The gap I noticed</h2>
+          <p>When I travel somewhere new, Spotify keeps recommending music based on my existing taste. It has no way of telling me what's actually being listened to <em>there</em>, or what local scene I'm walking into. Spotify already uses location for event discovery and some localized catalog surfacing — but local context has never been a first-class input to <strong>core</strong> music discovery, sitting alongside personal taste.</p>
+
+          <div class="callout">
+            <p><strong>Framing question:</strong> How might Spotify combine a user's personal music taste with their local context to improve discovery — without compromising personalization or privacy?</p>
+          </div>
+
+          <h2>Why a global taste model can't fake this</h2>
+          <p>Point the idea at four cities and you get four unrelated musical identities, not just different trending songs:</p>
+          <ul>
+            <li><strong>Barcelona</strong> — Catalan indie, flamenco-fusion, electronic sets tied to the club scene</li>
+            <li><strong>Nashville</strong> — country, Americana, the songwriter-circuit and bluegrass crossovers</li>
+            <li><strong>Tokyo</strong> — city-pop revival, J-rock, idol comebacks, Japanese hip-hop</li>
+            <li><strong>Lagos</strong> — Afrobeats and amapiano crossovers, singles that break locally before they chart globally</li>
+          </ul>
+          <p>Different genre identity, instrumentation, and cultural function of music. A recommendation model tuned on aggregate global taste has no way to distinguish these contexts unless local signal is built in as its own input. The product becomes <strong>personal taste × local context</strong>, not taste alone.</p>
+
+          <h2>Who it's for</h2>
+          <ul>
+            <li><strong>Travelers</strong> — visiting a new city; want to feel the local music culture without knowing what to search for.</li>
+            <li><strong>Local explorers</strong> — long-time residents whose recommendations have gone stale; want what's emerging around them.</li>
+            <li><strong>Event / nightlife users</strong> — deciding what to do tonight; want the music before the event listing.</li>
+          </ul>
+          <p>These are reasoned from the core idea, not from interviews — validating them with real travelers and locals is the first real step before building.</p>
+
+          <h2>The MVP: "Nearby"</h2>
+          <p>Scoped deliberately to a <strong>single new discovery surface</strong>, not a platform change. It has four parts:</p>
+          <ul>
+            <li><strong>Trending near you</strong> — what the city is actually streaming right now.</li>
+            <li><strong>Local artists</strong> — acts rooted in the place, including "big here, unknown elsewhere" ones.</li>
+            <li><strong>Your local mix</strong> — a personalized playlist blending your taste with local trends.</li>
+            <li><strong>Playing tonight</strong> — nearby shows, with a track playing first so the decision isn't blind.</li>
+          </ul>
+          <p>I mocked it up inside Spotify's real interface language — Home shelf, shortcut grid, mini-player, tab bar — so it reads as a native extension. It shows the Home entry point, two contrasting cities, and the location-permission screen.</p>
+          <div class="callout">
+            <p><a href="./spotify-nearby-mockup.html" target="_blank" rel="noopener"><strong>→ Open the interactive mockup</strong></a> (Home · Barcelona · Nashville · privacy controls)</p>
+          </div>
+
+          <h2>How the local signal works</h2>
+          <p>For every city with enough active users, Spotify computes a rolling <strong>local listening index</strong> — the most-streamed tracks and artists by users whose device location resolves to that city over a trailing 7-day window. This is a <em>population-level</em> signal, not a personalized one: it needs to know where streams come from in aggregate, never who any individual listener is. That index is then blended with the visiting or resident user's own taste profile.</p>
+          <p>The population-level design is deliberate — it's what makes the privacy model workable, and it's what makes cold start and popularity bias real constraints to design around rather than edge cases.</p>
+
+          <h2>The recommendation blend — a hypothesis, not a result</h2>
+          <div class="metric-band">
+            <div><b>40%</b><span>personal listening history</span></div>
+            <div><b>25%</b><span>local popularity</span></div>
+            <div><b>20%</b><span>taste similarity</span></div>
+            <div><b>15%</b><span>freshness + context</span></div>
+          </div>
+          <p>These numbers are a <strong>guess about the shape of the trade-off</strong>, not a benchmarked model: taste should still dominate, and local context should meaningfully move the needle without overwhelming personalization. The real weighting would only emerge from experimentation.</p>
+
+          <h2>Privacy, as a design constraint</h2>
+          <p>Location control is four tiers — Never / Approximate / While using Spotify / Always — and the default is <strong>approximate</strong> ("Barcelona", not coordinates). Because the local index is aggregate, no individual's listening history is ever exposed to surface local recommendations, and there's a one-tap opt-out on the surface itself.</p>
+
+          <h2>How I'd measure it</h2>
+          <p><strong>North star — incremental music discovery:</strong> the share of users who meaningfully engage with a new artist or song they found through Nearby. Not raw click volume — discovery of music people actually keep listening to.</p>
+          <p>Control gets normal recommendations; treatment gets normal recommendations plus Nearby. Guardrail metrics: skip rate, hide / not-interested, location opt-out, recommendation dissatisfaction.</p>
+
+          <h2>Risks I designed around</h2>
+          <ul>
+            <li><strong>Cold start</strong> in small cities → fall back to regional aggregation, and say so in the UI ("trending in Catalonia") rather than faking city-level signal.</li>
+            <li><strong>Popularity bias</strong> → cap the slots one dominant artist can take; reserve ~30% for long-tail local acts.</li>
+            <li><strong>Tourist mismatch</strong> → only weight local signal heavily after 24–48h in-market, or let users self-declare "traveling" vs "local".</li>
+            <li><strong>Echo chamber</strong> → rotate the local mix weekly, and inject novelty through taste-similarity rather than pure popularity.</li>
+          </ul>
+
+          <h2>What I'd validate next</h2>
+          <ul>
+            <li>The three user segments — with real travelers and residents, before any build.</li>
+            <li>Whether the local layer earns engagement <em>incremental</em> to Discover Weekly, or just cannibalizes it.</li>
+            <li>The privacy framing — does "approximate location" actually reassure people, or does any location ask suppress opt-in?</li>
+          </ul>
+
+          <div class="cs-next">
+            <span class="cs-back">More</span>
+            <a href="./index.html#contact">Get in touch →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot wrap">
+    <span>© <span data-year></span> Elijah D'Souza</span>
+    <span><a href="./index.html" style="color:inherit">Back to home</a></span>
+  </footer>
+
+  <script src="./main.js"></script>
+</body>
+</html>
