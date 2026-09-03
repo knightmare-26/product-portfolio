@@ -1,27 +1,9 @@
-// ---- Theme toggle (persists per-viewer) --------------------------------
-(function () {
-  const root = document.documentElement;
-  let stored = null;
-  try { stored = localStorage.getItem("theme"); } catch (e) { /* private mode */ }
-  if (stored === "dark" || stored === "light") root.setAttribute("data-theme", stored);
-
-  document.querySelectorAll("[data-theme-toggle]").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      const current = root.getAttribute("data-theme") || (prefersDark ? "dark" : "light");
-      const next = current === "dark" ? "light" : "dark";
-      root.setAttribute("data-theme", next);
-      try { localStorage.setItem("theme", next); } catch (e) { /* ignore */ }
-    });
-  });
-})();
-
-// ---- Current year -----------------------------------------------------
+// ---- Current year ----------------------------------------------------
 document.querySelectorAll("[data-year]").forEach(function (el) {
   el.textContent = new Date().getFullYear();
 });
 
-// ---- Scroll reveal ---------------------------------------------------
+// ---- Scroll reveal -------------------------------------------------
 (function () {
   const els = document.querySelectorAll(".reveal");
   if (!("IntersectionObserver" in window) ||
