@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <title>Elijah D'Souza — Product</title>
-  <meta name="description" content="Product decisions, written down and shown working. Case studies by Elijah D'Souza — framing, scoping, and mockups. Based in Pune, open to remote APM roles." />
+  <meta name="description" content="Product decisions, written down and shown working. Products and case studies by Elijah D'Souza — framing, scoping, and mockups. Based in Pune, open to remote APM roles." />
 
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%238b7ff5'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='16' fill='%2312131c' text-anchor='middle'%3EE%3C/text%3E%3C/svg%3E" />
 
@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <a class="skip" href="#work">Skip to work</a>
+  <a class="skip" href="#about">Skip to content</a>
 
   <main id="top">
 
@@ -39,31 +39,73 @@
         </p>
 
         <div class="hero__cta">
-          <a class="btn btn--primary" href="#work">See the work →</a>
+          <a class="btn btn--primary" href="#products">See the work →</a>
         </div>
 
         <div class="pillars">
           <div>
-            <h3>Frame</h3>
+            <h2>Frame</h2>
             <p>One-pager before code: user, pain, and the signal that says it's fixed.</p>
           </div>
           <div>
-            <h3>Scope</h3>
+            <h2>Scope</h2>
             <p>One surface, not a redesign. Cut until the bet is legible.</p>
           </div>
           <div>
-            <h3>Measure</h3>
+            <h2>Measure</h2>
             <p>A north star and guardrails written down before launch.</p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ============ WORK ============ -->
-    <section class="section" id="work">
+    <!-- ============ ABOUT ============ -->
+    <section class="section" id="about">
       <div class="wrap">
-        <p class="eyebrow reveal">Selected work</p>
-        <h2 class="lead reveal">Case studies written up like a mini PRD — context, decisions, outcome. More on the way.</h2>
+        <p class="eyebrow reveal">About me</p>
+        <div class="prose reveal">
+          <p>I'm <strong>Elijah</strong>, based in <strong>Pune, India</strong> and open to remote work. I studied Computer Science at Christ College, Pune, and now work at <strong>Aera Technology</strong> on a data-science org, coordinating delivery across distributed US and India teams.</p>
+          <p>The internal agentic-AI assistant our team ships has no dedicated PM, so over the last year I've grown into that gap — discovery, the feedback pipeline, specs, beta testing, and adoption. I'm now looking for an APM seat where I can do that full-time and learn from a strong product team.</p>
+          <p class="prose__note">Learning: IBM AI Product Manager (in progress) · Pendo PM Basics · PMI Scrum · Anthropic AI Fluency · Google Generative AI.</p>
+          <!-- ▼▼ EDIT (optional): a genuine personal line — a hobby, what you build for fun ▼▼ -->
+          <!-- <p>Outside work I ___.</p> -->
+          <!-- ▲▲ -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PRODUCTS ============ -->
+    <section class="section" id="products">
+      <div class="wrap">
+        <p class="eyebrow reveal">Products</p>
+        <h2 class="lead reveal">Things I've actually built — open one and click around.</h2>
+
+        <ul class="cards reveal">
+
+          <li class="card">
+            <a href="./spotify-nearby-mockup.html" target="_blank" rel="noopener">
+              <span class="card__kind">Interactive mockup</span>
+              <h3>Spotify "Nearby"</h3>
+              <p>A location-aware discovery surface built inside Spotify's real interface language — Home shelf, two contrasting cities, and the location-permission flow.</p>
+              <span class="card__tags"><span>Prototyping</span><span>UX</span></span>
+              <span class="card__go">Open it ↗</span>
+            </a>
+          </li>
+
+          <!-- ▼▼ ADD MORE PRODUCTS HERE ▼▼
+               Copy the <li class="card"> block above and swap in the link, kind label,
+               title, blurb and tags. Use target="_blank" only for links that leave the site.
+          ▲▲ -->
+
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ CASE STUDIES ============ -->
+    <section class="section" id="case-studies">
+      <div class="wrap">
+        <p class="eyebrow reveal">Case studies</p>
+        <h2 class="lead reveal">Written up like a mini PRD — context, decisions, outcome.</h2>
       </div>
 
       <div class="wrap">
@@ -80,8 +122,8 @@
             </span>
             <span class="work__metric">
               <b>0→1</b>
-              <span>concept + mockups</span>
-              <span class="work__arrow" aria-hidden="true"> →</span>
+              <span class="work__metric-label">concept + mockups</span>
+              <span class="work__arrow" aria-hidden="true">→</span>
             </span>
           </a>
 
@@ -91,140 +133,6 @@
           ▲▲ -->
 
         </div>
-      </div>
-    </section>
-
-    <!-- ============ PROCESS ============ -->
-    <section class="section" id="process">
-      <div class="wrap grid-2">
-        <div>
-          <p class="eyebrow reveal">How I work</p>
-          <h2 class="lead reveal">A loop I try to run fast and cheaply before committing engineering time.</h2>
-        </div>
-        <div class="steps reveal">
-          <div class="step">
-            <span class="step__k"></span>
-            <div>
-              <h3>Frame the problem</h3>
-              <p>Write the one-pager first. If I can't state the user, the pain, and how we'd know it's fixed, it's not ready to build. This alone cut clarification cycles with my engineers by about half.</p>
-            </div>
-          </div>
-          <div class="step">
-            <span class="step__k"></span>
-            <div>
-              <h3>Listen at scale, not anecdotally</h3>
-              <p>Lightweight user research plus a feedback pipeline that aggregates reports by theme and frequency — so prioritization runs on a pattern, not the last loud request.</p>
-            </div>
-          </div>
-          <div class="step">
-            <span class="step__k"></span>
-            <div>
-              <h3>Test before you build</h3>
-              <p>Prototype in Figma, beta-test early builds, probe AI features with real prompts and MCP integrations. The goal is a signal, not a launch.</p>
-            </div>
-          </div>
-          <div class="step">
-            <span class="step__k"></span>
-            <div>
-              <h3>Ship, measure, write it down</h3>
-              <p>Define the metric before launch, track it on a live dashboard, and publish a short retro so the team keeps the learning.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ ABOUT ============ -->
-    <section class="section" id="about">
-      <div class="wrap">
-        <p class="eyebrow reveal">About</p>
-        <div class="prose reveal">
-          <p>I'm <strong>Elijah</strong>, based in <strong>Pune, India</strong> and open to remote work. I studied Computer Science at Christ College, Pune, and now work at <strong>Aera Technology</strong> on a data-science org, coordinating delivery across distributed US and India teams.</p>
-          <p>The internal agentic-AI assistant our team ships has no dedicated PM, so over the last year I've grown into that gap — discovery, the feedback pipeline, specs, beta testing, and adoption. I'm now looking for an APM seat where I can do that full-time and learn from a strong product team.</p>
-          <p style="color:var(--muted)">Learning: IBM AI Product Manager (in progress) · Pendo PM Basics · PMI Scrum · Anthropic AI Fluency · Google Generative AI.</p>
-          <!-- ▼▼ EDIT (optional): a genuine personal line — a hobby, what you build for fun ▼▼ -->
-          <!-- <p>Outside work I ___.</p> -->
-          <!-- ▲▲ -->
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ SKILLS & TOOLS ============ -->
-    <section class="section" id="skills">
-      <div class="wrap">
-        <p class="eyebrow reveal">Skills &amp; tools</p>
-        <h2 class="lead reveal">What I bring, and what I build with.</h2>
-
-        <div class="tags-head reveal">
-          <span class="tag-pill">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-            Skills
-          </span>
-          <span class="tags-head__tools" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h18M6 12h12M10 19h4"/></svg>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 4v16M7 4l-3 3M7 4l3 3M17 20V4M17 20l-3-3M17 20l3-3"/></svg>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-          </span>
-        </div>
-        <ul class="tag-grid reveal">
-          <li class="tag-card"><span class="tag-ico">🧭</span>Product Discovery</li>
-          <li class="tag-card"><span class="tag-ico">🔍</span>User Research</li>
-          <li class="tag-card"><span class="tag-ico">🗣️</span>Customer Feedback Analysis</li>
-          <li class="tag-card"><span class="tag-ico">🧮</span>Data-Driven Prioritization</li>
-          <li class="tag-card"><span class="tag-ico">📝</span>Requirements &amp; Specs</li>
-          <li class="tag-card"><span class="tag-ico">🤖</span>AI-Powered Product Development</li>
-          <li class="tag-card"><span class="tag-ico">✍️</span>Prompt Engineering</li>
-          <li class="tag-card"><span class="tag-ico">🔌</span>MCP Testing</li>
-          <li class="tag-card"><span class="tag-ico">🐍</span>SQL &amp; Python</li>
-          <li class="tag-card"><span class="tag-ico">🎯</span>KPI / OKR Tracking</li>
-          <li class="tag-card"><span class="tag-ico">🔁</span>Agile Delivery</li>
-          <li class="tag-card"><span class="tag-ico">🤝</span>Stakeholder Communication</li>
-        </ul>
-
-        <div class="tags-head reveal">
-          <span class="tag-pill">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-            Tools
-          </span>
-          <span class="tags-head__tools" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h18M6 12h12M10 19h4"/></svg>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 4v16M7 4l-3 3M7 4l3 3M17 20V4M17 20l-3-3M17 20l3-3"/></svg>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-          </span>
-        </div>
-        <ul class="tag-grid reveal">
-          <li class="tag-card"><span class="tag-ico">📋</span>Jira</li>
-          <li class="tag-card"><span class="tag-ico">🔷</span>Confluence</li>
-          <li class="tag-card"><span class="tag-ico">📓</span>Notion</li>
-          <li class="tag-card"><span class="tag-ico">🔺</span>Asana</li>
-          <li class="tag-card"><span class="tag-ico">🎨</span>Figma</li>
-          <li class="tag-card"><span class="tag-ico">🗂️</span>Trello</li>
-          <li class="tag-card"><span class="tag-ico">💬</span>Slack</li>
-          <li class="tag-card"><span class="tag-ico">📈</span>Google Analytics</li>
-          <li class="tag-card"><span class="tag-ico">🧩</span>Pendo</li>
-        </ul>
-
-        <div class="tags-head reveal">
-          <span class="tag-pill">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-            AI Tools
-          </span>
-          <span class="tags-head__tools" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h18M6 12h12M10 19h4"/></svg>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 4v16M7 4l-3 3M7 4l3 3M17 20V4M17 20l-3-3M17 20l3-3"/></svg>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-          </span>
-        </div>
-        <ul class="tag-grid reveal">
-          <li class="tag-card"><span class="tag-ico">🔶</span>Claude</li>
-          <li class="tag-card"><span class="tag-ico">💠</span>ChatGPT</li>
-          <li class="tag-card"><span class="tag-ico">♊</span>Gemini</li>
-          <li class="tag-card"><span class="tag-ico">💗</span>Lovable</li>
-          <li class="tag-card"><span class="tag-ico">⚡</span>Bolt</li>
-          <li class="tag-card"><span class="tag-ico">▲</span>v0</li>
-          <li class="tag-card"><span class="tag-ico">🔗</span>n8n</li>
-          <li class="tag-card"><span class="tag-ico">🟢</span>Supabase</li>
-        </ul>
       </div>
     </section>
 
