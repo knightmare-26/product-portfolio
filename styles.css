@@ -16,9 +16,7 @@
   --accent:      #8b7ff5;   /* periwinkle violet */
   --accent-ink:  #c9c2fb;   /* lighter violet for text on dark */
   --accent-soft: #1c1b33;
-  --signal:      #e5687a;   /* warm rose — metrics + rail dots */
-
-  --rail:        #f3f3f6;   /* the light left rail */
+  --signal:      #e5687a;   /* warm rose — metrics */
 
   --font-display: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
   --font-body:    "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -91,8 +89,9 @@ p { margin: 0; }
 }
 
 .section {
-  padding-block: clamp(3.5rem, 9vw, 7rem);
+  padding-block: clamp(2.75rem, 6vw, 4.5rem);
   border-top: 1px solid var(--hairline);
+  scroll-margin-top: 4.5rem; /* clears the sticky nav on an in-page jump */
 }
 
 .eyebrow {
@@ -104,7 +103,7 @@ p { margin: 0; }
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  margin-bottom: 1.75rem;
+  margin-bottom: 1.25rem;
 }
 .eyebrow::before {
   content: "";
@@ -121,7 +120,7 @@ p { margin: 0; }
   color: var(--ink);
 }
 
-.prose { max-width: var(--measure); }
+.prose { max-width: var(--measure); margin-top: 1.25rem; }
 .prose p + p { margin-top: 1.1em; }
 .prose__note { color: var(--muted); }
 
@@ -162,135 +161,10 @@ p { margin: 0; }
 .nav__links .is-cta { color: var(--ink); border-bottom: 1px solid var(--accent); padding-bottom: 2px; }
 @media (max-width: 620px) { .nav__links a:not(.is-cta) { display: none; } }
 
-/* =======================================================================
-   HERO — light rail in the page gutter + content on the shared grid
-   ======================================================================= */
-.hero { position: relative; }
-
-/* Rail sits in the left gutter and shrinks with it, so it never pushes the
-   hero text out of alignment with the sections below. It collapses to 0 on
-   narrower screens, where there is no gutter to put it in. */
-.hero__rail {
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: max(0px, min(132px, calc(50% - var(--maxw) / 2 + var(--pad-x) - 1rem)));
-  background: var(--rail);
-  overflow: hidden;
-}
-@media (max-width: 1199px) { .hero__rail { display: none; } }
-
-.hero__dot {
-  position: absolute;
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  background: var(--signal);
-}
-.hero__dot--1 { top: 15%; left: 18px; }
-.hero__dot--2 { top: 29%; left: 4px; }
-
-.hero__inner {
-  max-width: var(--maxw);
-  margin-inline: auto;
-  padding: clamp(3rem, 6vw, 4.25rem) var(--pad-x) clamp(4rem, 9vw, 6.5rem);
-}
-/* Keep the hero's text on a comfortable measure; the pillars panel spans the
-   full wrap width so its right edge lines up with the lists further down. */
-.hero__inner > * { max-width: 58rem; }
-.hero__inner > .pillars { max-width: none; }
-
-.hero__tag {
-  font-family: var(--font-mono);
-  font-size: var(--step--1);
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: var(--accent);
-  display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
-  margin-bottom: 1.6rem;
-}
-.hero__tag::before {
-  content: "";
-  width: 1.75rem;
-  height: 1px;
-  background: var(--accent);
-  flex: none;
-  transform: translateY(-0.28em);
-}
-
-.hero h1 {
-  font-size: clamp(2.05rem, 1.35rem + 3.4vw, 3.7rem);
-  font-weight: 800;
-  line-height: 1.08;
-  letter-spacing: -0.021em;
-  max-width: 26ch;
-  text-wrap: normal;
-  overflow-wrap: break-word;
-}
-.hero h1 br { display: none; }
-@media (min-width: 720px) { .hero h1 br { display: inline; } }
-
-.hero__sub {
-  margin-top: 1.6rem;
-  font-size: 1.0625rem;
-  color: var(--muted);
-  max-width: 34em;
-  line-height: 1.65;
-}
-
-.hero__cta {
-  margin-top: 2.25rem;
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-/* ---- Buttons -------------------------------------------------- */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-family: var(--font-body);
-  font-size: 0.95rem;
-  font-weight: 600;
-  text-decoration: none;
-  padding: 0.7rem 1.1rem;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  transition: transform 0.2s var(--ease), background 0.2s var(--ease),
-              border-color 0.2s var(--ease), color 0.2s var(--ease);
-}
-/* solid light — the primary action in the hero */
-.btn--primary { background: #f4f4f7; color: #16171f; }
-.btn--primary:hover { transform: translateY(-2px); background: #fff; }
-
-/* ---- Pillars panel (Frame / Scope / Measure) ---------------- */
-.pillars {
-  margin-top: 3rem;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  border: 1px solid var(--hairline);
-  border-radius: 12px;
-  overflow: hidden;
-  background: color-mix(in srgb, var(--surface) 55%, transparent);
-}
-.pillars > div { padding: 1.4rem 1.5rem; }
-.pillars > div + div { border-left: 1px solid var(--hairline); }
-.pillars h2 {
-  font-size: 1.3rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-}
-.pillars p {
-  margin-top: 0.5rem;
-  color: var(--muted);
-  font-size: var(--step--1);
-  line-height: 1.5;
-}
-@media (max-width: 760px) {
-  .pillars { grid-template-columns: 1fr; }
-  .pillars > div + div { border-left: 0; border-top: 1px solid var(--hairline); }
-}
+/* About is the first section under the nav — no extra headroom needed (the
+   nav already frames the top of the page) and no top hairline, since the
+   nav's own bottom border already divides it from the content. */
+.section--first { border-top: 0; }
 
 /* ---- Work list ---------------------------------------------- */
 .work { display: grid; gap: 1px; background: var(--hairline); border-block: 1px solid var(--hairline); }
@@ -332,7 +206,7 @@ p { margin: 0; }
 
 /* ---- Product cards ------------------------------------------ */
 .cards {
-  list-style: none; margin: 2rem 0 0; padding: 0;
+  list-style: none; margin: 1.5rem 0 0; padding: 0;
   display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 460px), 1fr));
   gap: 1rem;
 }
@@ -384,7 +258,7 @@ p { margin: 0; }
 .foot__link { color: inherit; }
 .foot {
   border-top: 1px solid var(--hairline);
-  padding-block: 2.5rem;
+  padding-block: 2rem;
   display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem;
   font-family: var(--font-mono); font-size: var(--step--1); color: var(--muted);
 }

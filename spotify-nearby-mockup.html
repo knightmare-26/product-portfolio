@@ -60,9 +60,19 @@
     to{ opacity:1; transform: translateY(0) scale(1); }
   }
 
-  .wrap{ max-width: 1280px; margin: 0 auto; position:relative; }
+  .wrap{ max-width: 640px; margin: 0 auto; position:relative; z-index:1; }
+  body::before, body::after{
+    content:"";
+    position: fixed;
+    top:0; bottom:0;
+    width: 320px;
+    pointer-events:none;
+    z-index:0;
+  }
+  body::before{ left:0; background: radial-gradient(ellipse 320px 60% at left, rgba(29,185,84,0.14), transparent 70%); }
+  body::after{ right:0; background: radial-gradient(ellipse 320px 60% at right, rgba(199,36,177,0.12), transparent 70%); }
 
-  .hero{ margin-bottom: 46px; animation: fadeUp 0.7s ease both; }
+  .hero{ margin-bottom: 46px; animation: fadeUp 0.7s ease both; text-align:center; }
   .eyebrow{
     color: var(--green);
     font-size: 12px;
@@ -72,6 +82,7 @@
     margin-bottom: 12px;
     display:flex;
     align-items:center;
+    justify-content:center;
     gap:8px;
   }
   .eyebrow-dot{
@@ -93,17 +104,18 @@
   .sub{
     color: var(--dim);
     font-size: 14.5px;
-    max-width: 680px;
+    max-width: 560px;
     line-height: 1.6;
-    margin-bottom: 24px;
+    margin: 0 auto 24px;
   }
 
   .waveform{
     display:flex;
     align-items:flex-end;
+    justify-content:center;
     gap:3px;
     height: 26px;
-    margin-bottom: 6px;
+    margin: 0 auto 6px;
   }
   .waveform span{
     display:block;
@@ -115,14 +127,21 @@
 
   .row{
     display:flex;
-    gap: 26px;
-    flex-wrap: wrap;
-    align-items: flex-start;
+    flex-direction: column;
+    gap: 56px;
+    align-items: center;
     justify-content: center;
+  }
+  .phone-group{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
   }
 
   .phone-slot{
     position:relative;
+    display:flex;
+    width: clamp(320px, 70vw, 420px);
     animation: fadeUp 0.8s ease both;
   }
   .phone-slot:nth-child(1){ animation-delay: 0.05s; }
@@ -148,7 +167,9 @@
   .phone{
     position:relative;
     z-index:1;
-    width: 292px;
+    width: 100%;
+    display:flex;
+    flex-direction:column;
     background: #000;
     border-radius: 36px;
     border: 1px solid #2a2a2a;
@@ -174,6 +195,7 @@
     border-radius: 26px;
     overflow:hidden;
     min-height: 600px;
+    flex: 1;
     display:flex;
     flex-direction:column;
     position: relative;
@@ -227,7 +249,10 @@
     width:56px;height:56px; flex-shrink:0;
     display:flex;align-items:center;justify-content:center; font-size:20px;
   }
-  .shortcut-label{ font-size:12.5px; font-weight:700; padding-right:8px; line-height:1.2; }
+  .shortcut-label{
+    font-size:11.5px; font-weight:700; padding-right:8px; line-height:1.25;
+    flex:1; min-width:0; white-space:normal; overflow-wrap:break-word;
+  }
   .shortcut.nearby-cta{
     background: linear-gradient(90deg, rgba(29,185,84,0.24), var(--card) 70%);
     border: 1px solid rgba(29,185,84,0.5);
@@ -245,7 +270,12 @@
   .shelf-head{ display:flex; justify-content:space-between; align-items:baseline; padding: 0 16px 10px; }
   .shelf-title{ font-size:16.5px; font-weight:800; }
   .shelf-more{ font-size:11.5px; color:var(--dim); font-weight:700; }
-  .hscroll{ display:flex; gap:12px; overflow-x:auto; padding: 0 16px; scroll-snap-type: x proximity; }
+  .hscroll{
+    display:flex; gap:12px; overflow-x:auto; overflow-y:hidden;
+    padding: 0 16px 10px; scroll-snap-type: x proximity;
+    scrollbar-width: none; -ms-overflow-style: none;
+  }
+  .hscroll::-webkit-scrollbar{ display:none; height:0; }
   .tile{ flex:0 0 auto; width: 118px; scroll-snap-align:start; }
   .art{
     width:118px;height:118px; border-radius:4px;
@@ -402,6 +432,30 @@
     text-transform:uppercase; color:var(--dim2); margin-top:48px; margin-bottom:20px;
   }
 
+  @media (max-width: 700px){
+    body{ padding: 44px 14px 60px; }
+    h1{ font-size: 26px; }
+    .row{ gap: 20px; }
+    .fp-label{ width: 76px; font-size: 12px; }
+  }
+  @media (max-width: 520px){
+    .fp-row{ flex-direction: column; align-items: stretch; gap: 6px; }
+    .fp-label{ width:auto; text-align:left; }
+    .fp-bar{ flex: none; width:100%; height: 44px; }
+    .fp-seg{
+      font-size: 9px;
+      line-height: 1.15;
+      white-space: normal;
+      word-break: break-word;
+      overflow: hidden;
+      padding: 2px 3px;
+      text-align: center;
+    }
+  }
+  @media (max-width: 380px){
+    .phone-slot{ width: 92vw; }
+  }
+
   @media (prefers-reduced-motion: reduce){
     *{ animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
   }
@@ -435,6 +489,7 @@
   <div class="row">
 
     <!-- HOME SCREEN (ENTRY POINT) -->
+    <div class="phone-group">
     <div class="phone-slot glow-green">
       <div class="phone">
         <div class="notch"></div>
@@ -530,8 +585,12 @@
         </div>
       </div>
     </div>
+    <div class="caption">Home — entry point</div>
+    <div class="caption-sub">Nearby surfaces as a native shelf + shortcut</div>
+    </div>
 
     <!-- BARCELONA NEARBY DETAIL -->
+    <div class="phone-group">
     <div class="phone-slot glow-violet">
       <div class="phone">
         <div class="notch"></div>
@@ -599,8 +658,12 @@
         </div>
       </div>
     </div>
+    <div class="caption">Barcelona</div>
+    <div class="caption-sub">Flamenco-fusion · Catalan indie · electronic</div>
+    </div>
 
     <!-- NASHVILLE NEARBY DETAIL -->
+    <div class="phone-group">
     <div class="phone-slot glow-amber">
       <div class="phone">
         <div class="notch"></div>
@@ -668,8 +731,12 @@
         </div>
       </div>
     </div>
+    <div class="caption">Nashville</div>
+    <div class="caption-sub">Country · Americana · bluegrass</div>
+    </div>
 
     <!-- PRIVACY / SETTINGS SCREEN -->
+    <div class="phone-group">
     <div class="phone-slot glow-gray">
       <div class="phone">
         <div class="notch"></div>
@@ -697,14 +764,10 @@
         </div>
       </div>
     </div>
+    <div class="caption">Privacy, by default</div>
+    <div class="caption-sub">Approximate location, opt-in tiers, one-tap off</div>
+    </div>
 
-  </div>
-
-  <div class="row" style="margin-top:8px;">
-    <div style="width:292px;"><div class="caption">Home — entry point</div><div class="caption-sub">Nearby surfaces as a native shelf + shortcut</div></div>
-    <div style="width:292px;"><div class="caption">Barcelona</div><div class="caption-sub">Flamenco-fusion · Catalan indie · electronic</div></div>
-    <div style="width:292px;"><div class="caption">Nashville</div><div class="caption-sub">Country · Americana · bluegrass</div></div>
-    <div style="width:292px;"><div class="caption">Privacy, by default</div><div class="caption-sub">Approximate location, opt-in tiers, one-tap off</div></div>
   </div>
 
   <div class="section-tag">Supporting analysis</div>
