@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CS-02 · Claude Code teardown — Elijah D'Souza</title>
+  <meta name="description" content="A product teardown of Claude Code: how the agent works under the hood, where it lifts development-team productivity, and where it falls short." />
+  <link rel="canonical" href="https://knightmare-26.github.io/product-portfolio/case-study-2.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="Elijah D'Souza — Product" />
+  <meta property="og:title" content="CS-02 · Claude Code teardown — Elijah D'Souza" />
+  <meta property="og:description" content="A product teardown of Claude Code: how the agent works under the hood, where it lifts development-team productivity, and where it falls short." />
+  <meta property="og:url" content="https://knightmare-26.github.io/product-portfolio/case-study-2.html" />
+  <meta property="og:image" content="https://knightmare-26.github.io/product-portfolio/assets/og.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Elijah D'Souza — product case studies and AI teardowns" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%238b7ff5'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='16' fill='%2312131c' text-anchor='middle'%3EE%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <a class="skip" href="#cs">Skip to case study</a>
+
+  <header class="nav">
+    <div class="wrap nav__inner">
+      <a class="nav__mark" href="./index.html">Elijah&nbsp;<b>D'Souza</b></a>
+      <nav class="nav__links" aria-label="Primary">
+        <a href="./index.html#products">products</a>
+        <a href="./index.html#case-studies">case studies</a>
+        <a class="is-cta" href="./index.html#contact">contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="cs">
+    <section class="wrap cs-hero">
+      <a class="cs-back" href="./index.html#case-studies">← All case studies</a>
+      <p class="eyebrow cs-hero__eyebrow">Case study CS-02 · Product teardown</p>
+      <h1>Claude Code — what's under the hood, and where it breaks</h1>
+      <p class="lead">An AI coding agent that lives in your terminal, IDE and CI. This teardown opens up the engine (the agent loop, context management, prompt caching and safety layers), then looks at where it helps development teams, where it falls short, and the gaps I'd prioritise as its PM.</p>
+    </section>
+
+    <section class="wrap section">
+      <div class="cs-layout">
+
+        <dl class="cs-meta">
+          <div><dt>Type</dt><dd>Product teardown</dd></div>
+          <div><dt>When</dt><dd>Sep 2026</dd></div>
+          <div><dt>Goal</dt><dd>Break down how it works + propose prioritised improvements</dd></div>
+          <div><dt>Method</dt><dd>Hands-on use, official docs, public research &amp; developer surveys</dd></div>
+          <div><dt>Sources</dt><dd><a href="#sources">Listed below ↓</a></dd></div>
+        </dl>
+
+        <div class="cs-body">
+          <blockquote>An independent teardown. I'm not affiliated with Anthropic. Product details come from public docs and my own use; the recommendations and metrics are my own reasoning, not internal data.</blockquote>
+
+          <h2>Context: what it is and who it's for</h2>
+          <p>Claude Code is Anthropic's <strong>agentic</strong> coding tool. Autocomplete tools suggest the next line. Claude Code takes a task in plain language ("write tests for the auth module, run them, fix any failures"), then reads the codebase, edits files, runs commands and checks its own work across many steps.</p>
+          <p>It runs in one engine behind several surfaces: a terminal CLI, VS Code and JetBrains extensions, a desktop app, the web and mobile, plus CI (GitHub Actions, GitLab) and Slack. Access comes with a paid Claude subscription or pay-as-you-go API billing.</p>
+          <ul>
+            <li><strong>Primary user:</strong> the individual developer who wants to hand off whole tasks, not just keystrokes.</li>
+            <li><strong>Economic buyer:</strong> engineering leaders who want more throughput from the same team.</li>
+            <li><strong>Emerging user:</strong> non-engineers (PMs, data, legal, marketing) who can now build small tools without writing code themselves.</li>
+          </ul>
+          <p>It competes with IDE-first assistants (GitHub Copilot, Cursor) and other agents (OpenAI Codex, Gemini CLI). Its position: <em>terminal-native, agent-first, and highly configurable.</em></p>
+
+          <h2>Under the hood: how the engine works</h2>
+          <p>The simplest accurate model is <strong>model + harness</strong>. The model (Claude, served over Anthropic's API) does the reasoning and decides what to do next. The harness (the Claude Code program on your machine) owns everything else: the tools, the context the model sees, the permission checks, memory and the loop that ties them together. Every surface (terminal, IDE, desktop, web, CI, Slack) runs the same harness, and the Agent SDK exposes it for developers to build their own agents.</p>
+
+          <h3>1 · The agent loop, one turn at a time</h3>
+          <p>The model is <strong>stateless</strong>: it remembers nothing between API calls. So on every step the harness sends the <em>entire</em> session again, and the model answers with either text or a request to call a tool. That round trip is one <em>turn</em>.</p>
+
+          <figure class="cs-figure">
+            <svg viewBox="0 0 640 330" role="img" aria-labelledby="loop-title loop-desc">
+              <title id="loop-title">One turn of the Claude Code agent loop</title>
+              <desc id="loop-desc">The harness on your machine sends the full request to the Claude API. The model replies with a tool call. The harness checks permissions, runs hooks and executes the tool, then appends the result and re-sends everything. When the model replies with text and no tool call, the task is done.</desc>
+              <defs>
+                <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                  <path d="M0,0 L10,5 L0,10 z" class="fig-arrowhead" />
+                </marker>
+              </defs>
+              <!-- lane titles -->
+              <text x="110" y="26" text-anchor="middle" class="fig-label">Harness · your machine</text>
+              <text x="530" y="26" text-anchor="middle" class="fig-label">Claude API · the model</text>
+              <!-- lanes -->
+              <rect x="20" y="40" width="180" height="280" rx="6" class="fig-node" />
+              <rect x="440" y="40" width="180" height="280" rx="6" class="fig-core" />
+              <!-- harness internals -->
+              <text x="110" y="162" text-anchor="middle" class="fig-sub">on each tool call:</text>
+              <rect x="38" y="172" width="144" height="26" rx="4" class="fig-step" />
+              <text x="110" y="189" text-anchor="middle" class="fig-node-t">Permission check</text>
+              <rect x="38" y="204" width="144" height="26" rx="4" class="fig-step" />
+              <text x="110" y="221" text-anchor="middle" class="fig-node-t">PreToolUse hooks</text>
+              <rect x="38" y="236" width="144" height="26" rx="4" class="fig-step" />
+              <text x="110" y="253" text-anchor="middle" class="fig-node-t">Run tool</text>
+              <!-- model internals -->
+              <text x="530" y="170" text-anchor="middle" class="fig-core-t">Claude</text>
+              <text x="530" y="192" text-anchor="middle" class="fig-sub">reads the whole request,</text>
+              <text x="530" y="207" text-anchor="middle" class="fig-sub">picks the next step</text>
+              <text x="530" y="232" text-anchor="middle" class="fig-sub">stateless between calls</text>
+              <!-- arrows -->
+              <line x1="202" y1="72" x2="436" y2="72" class="fig-line" marker-end="url(#arr)" />
+              <text x="320" y="63" text-anchor="middle" class="fig-node-t">1 · Full request</text>
+              <text x="320" y="88" text-anchor="middle" class="fig-sub">prompt, tools, memory, history</text>
+
+              <line x1="438" y1="124" x2="204" y2="124" class="fig-line" marker-end="url(#arr)" />
+              <text x="320" y="115" text-anchor="middle" class="fig-node-t">2 · tool_use</text>
+              <text x="320" y="140" text-anchor="middle" class="fig-sub">e.g. Bash: npm test</text>
+
+              <line x1="202" y1="250" x2="436" y2="250" class="fig-line" marker-end="url(#arr)" />
+              <text x="320" y="241" text-anchor="middle" class="fig-node-t">3 · tool_result appended</text>
+              <text x="320" y="266" text-anchor="middle" class="fig-sub">everything re-sent → next turn</text>
+
+              <line x1="438" y1="300" x2="204" y2="300" class="fig-line fig-line--done" marker-end="url(#arr)" />
+              <text x="320" y="292" text-anchor="middle" class="fig-node-t">4 · Text only, no tool call</text>
+              <text x="320" y="316" text-anchor="middle" class="fig-sub">= task finished</text>
+
+              <text x="320" y="196" text-anchor="middle" class="fig-sub">↻ steps 1–3 repeat,</text>
+              <text x="320" y="211" text-anchor="middle" class="fig-sub">often dozens of times</text>
+            </svg>
+            <figcaption>The loop ends when a model response contains no tool call. The user can interrupt or redirect at any point.</figcaption>
+          </figure>
+
+          <p>For the prompt <em>"fix the failing tests in auth.ts"</em>, a typical trace looks like this:</p>
+          <ol class="cs-trace">
+            <li><span>Turn 1</span><div><code>Bash</code> runs <code>npm test</code> → three failures come back as the tool result.</div></li>
+            <li><span>Turn 2</span><div><code>Read</code> on <code>auth.ts</code> and <code>auth.test.ts</code>, run in parallel because reads can't conflict.</div></li>
+            <li><span>Turn 3</span><div><code>Edit</code> fixes <code>auth.ts</code>, then <code>Bash</code> re-runs the tests, one after the other because writes can conflict. All pass.</div></li>
+            <li><span>Turn 4</span><div>Text only: "Fixed the bug, all three tests pass." No tool call, so the loop ends.</div></li>
+          </ol>
+          <p>Two design details matter here. <strong>Verification is part of the loop</strong>: the model sees real test output, not its own guess about it. And <strong>a denied tool call isn't a crash</strong>: the rejection comes back as the tool result and the model tries another approach.</p>
+
+          <h3>2 · The tools</h3>
+          <p>A small set of built-in tools, each an API tool definition the model can call:</p>
+          <div class="cs-table-wrap">
+            <table class="cs-table cs-table--plain">
+              <thead><tr><th scope="col">Category</th><th scope="col">Tools</th><th scope="col">What they give the model</th></tr></thead>
+              <tbody>
+                <tr><td>Files</td><td><code>Read</code> <code>Edit</code> <code>Write</code></td><td>See and change code</td></tr>
+                <tr><td>Search</td><td><code>Glob</code> <code>Grep</code></td><td>Find files by name pattern or content (ripgrep)</td></tr>
+                <tr><td>Execution</td><td><code>Bash</code> / <code>PowerShell</code></td><td>Anything you can do in a terminal: tests, builds, git</td></tr>
+                <tr><td>Web</td><td><code>WebSearch</code> <code>WebFetch</code></td><td>Docs, error messages, APIs</td></tr>
+                <tr><td>Orchestration</td><td><code>Agent</code> <code>Skill</code> <code>AskUserQuestion</code> <code>ToolSearch</code></td><td>Spawn subagents, load workflows, ask you, load more tools on demand</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>3 · Finding code: agentic search, not an index</h3>
+          <p>Many AI coding tools <strong>index</strong> your repo up front: they split it into chunks, embed them as vectors, and retrieve the "most similar" chunks for each question (RAG). Claude Code doesn't. It explores at runtime the way an engineer would: <code>Glob</code> for file names, <code>Grep</code> for exact strings, <code>Read</code> for the files that matter, then it follows imports and call sites.</p>
+          <p>Anthropic's Boris Cherny has said early versions did use RAG with a local vector database, and the team switched because agentic search worked better. It is also simpler, and it avoids the privacy, staleness and reliability problems of maintaining an index.</p>
+          <ul>
+            <li><strong>Gains:</strong> always current (no index drifting behind your edits), exact matches, nothing sent off-machine to be embedded, zero setup.</li>
+            <li><strong>Costs:</strong> every search spends turns and tokens. Vague, concept-level questions ("where do we handle rate limiting?") can take several searches in a large codebase before it finds the right place.</li>
+          </ul>
+
+          <h3>4 · The context window: the agent's working memory</h3>
+          <p>Everything the model knows during a session has to fit in its context window: 200K tokens by default, 1M on some newer models. The docs' own walkthrough shows roughly <strong>8K tokens are already used before you type</strong>, and it fills from there:</p>
+
+          <figure class="cs-figure">
+            <svg viewBox="0 0 640 230" role="img" aria-labelledby="ctx-title ctx-desc">
+              <title id="ctx-title">What fills the context window, and what gets cached</title>
+              <desc id="ctx-desc">A bar split into three layers. The system prompt and tool definitions, about 4.2 thousand tokens, and project context such as CLAUDE.md and memory, about 3.7 thousand tokens, rarely change and are served from the prompt cache. The conversation layer grows every turn with messages, file reads and command output. When the window fills, old tool output is cleared, then the conversation is summarised.</desc>
+              <!-- brackets -->
+              <path d="M20 44 V36 H300 V44" class="fig-bracket" />
+              <text x="160" y="28" text-anchor="middle" class="fig-node-t">Stable prefix → served from cache</text>
+              <path d="M304 44 V36 H620 V44" class="fig-bracket" />
+              <text x="462" y="28" text-anchor="middle" class="fig-node-t">Grows every turn</text>
+              <!-- bar -->
+              <rect x="20" y="52" width="140" height="40" rx="3" class="fig-seg1" />
+              <rect x="162" y="52" width="138" height="40" rx="3" class="fig-seg2" />
+              <rect x="304" y="52" width="316" height="40" rx="3" class="fig-seg3" />
+              <line x1="352" y1="52" x2="352" y2="92" class="fig-tick" />
+              <line x1="398" y1="52" x2="398" y2="92" class="fig-tick" />
+              <line x1="430" y1="52" x2="430" y2="92" class="fig-tick" />
+              <line x1="486" y1="52" x2="486" y2="92" class="fig-tick" />
+              <line x1="520" y1="52" x2="520" y2="92" class="fig-tick" />
+              <text x="90" y="77" text-anchor="middle" class="fig-node-t">System + tools</text>
+              <text x="231" y="77" text-anchor="middle" class="fig-node-t">Project context</text>
+              <text x="570" y="77" text-anchor="middle" class="fig-sub">…</text>
+              <!-- labels -->
+              <text x="20" y="114" class="fig-sub">~4.2K tokens</text>
+              <text x="20" y="129" class="fig-sub">instructions, tool</text>
+              <text x="20" y="144" class="fig-sub">definitions</text>
+              <text x="162" y="114" class="fig-sub">~3.7K tokens</text>
+              <text x="162" y="129" class="fig-sub">CLAUDE.md, memory,</text>
+              <text x="162" y="144" class="fig-sub">env, skill + MCP names</text>
+              <text x="304" y="114" class="fig-sub">your messages · replies · file reads (~1–2.5K each)</text>
+              <text x="304" y="129" class="fig-sub">test output · hook output · subagent summaries</text>
+              <!-- compaction -->
+              <line x1="20" y1="170" x2="620" y2="170" class="fig-rule" />
+              <text x="20" y="194" class="fig-node-t">When it fills:</text>
+              <text x="118" y="194" class="fig-sub">1. clear old tool output → 2. summarise the conversation →</text>
+              <text x="118" y="212" class="fig-sub">3. re-inject CLAUDE.md, memory, the plan and up to 5 recently edited files</text>
+            </svg>
+            <figcaption>Token counts are the docs' representative figures. Run <code>/context</code> in a session to see your own.</figcaption>
+          </figure>
+
+          <p><strong>Compaction</strong> is how a session outlives its window. As it nears the limit, the harness first drops old tool outputs, then asks the model to summarise the conversation. The summary replaces the history. Things loaded from disk come back afterwards: project <code>CLAUDE.md</code>, auto memory, the plan, up to five recently modified files, and invoked skills (capped at 5K tokens each). Anything said only in chat, like "don't touch the payments folder", survives only if the summary happens to keep it.</p>
+          <p><strong>Subagents</strong> are the other context tool. A subagent is a fresh loop with its own window. The parent hands it a task ("find every caller of <code>refreshToken</code>"), it does the heavy reading, and only its short summary comes back. Twenty file reads stay out of the main conversation.</p>
+
+          <h3>5 · Prompt caching: why re-sending everything is affordable</h3>
+          <p>Re-sending a 100K-token session on every turn sounds ruinous. It works because of <strong>prompt caching</strong>. The API caches the start of each request (the <em>prefix</em>), and a later request that begins with exactly the same bytes reads that part from cache at a much lower rate. Only the new tail is fully processed.</p>
+          <p>So the harness orders every request from least to most volatile: system prompt and tools, then project context, then the conversation. That's the bracket in the diagram above. The match must be exact, which explains some behaviours that otherwise look odd:</p>
+          <ul>
+            <li><strong>Editing <code>CLAUDE.md</code> mid-session does nothing</strong> until <code>/clear</code>, <code>/compact</code> or a restart. It's held from session start so the prefix doesn't change.</li>
+            <li><strong>Switching models makes the next turn slow and expensive.</strong> Each model has its own cache, so the whole history is reprocessed.</li>
+            <li><strong>MCP tools are "deferred".</strong> Only their names load up front and full schemas load on demand via <code>ToolSearch</code>, so connecting a server doesn't break the cached prefix or eat context.</li>
+            <li><strong>Plan mode and skills arrive as messages</strong>, not system-prompt changes, for the same reason.</li>
+            <li><strong>Timing matters.</strong> Cache entries expire after inactivity: five minutes by default, one hour on subscription plans. Coming back from lunch to a big session costs more than continuing it.</li>
+          </ul>
+          <p>Anthropic's own engineering write-up on this is titled "Prompt caching is everything". It's the least visible part of the product, and it shapes much of the rest.</p>
+
+          <h3>6 · Memory: <code>CLAUDE.md</code> as layered, plain-text config</h3>
+          <p>Memory is plain markdown files, loaded broadest to most specific: <strong>organisation policy → user (<code>~/.claude/CLAUDE.md</code>) → project (<code>./CLAUDE.md</code>, checked in) → personal-local (<code>CLAUDE.local.md</code>, gitignored)</strong>. Files are concatenated, not overridden, so the most specific instructions are read last. <code>CLAUDE.md</code> files in subfolders load only when Claude reads files there, and <code>@path</code> imports pull in other docs. Separately, <em>auto memory</em> lets Claude write its own notes (the first 200 lines load each session).</p>
+          <p>A key point the docs make: memory is <strong>context, not enforcement</strong>. The model usually follows it, but nothing guarantees it. For guarantees you use hooks.</p>
+
+          <h3>7 · Safety: five independent layers</h3>
+          <ol>
+            <li><strong>Permission rules.</strong> Allow / ask / deny patterns like <code>Bash(npm test)</code>, scoped from org policy down to personal settings. Deny rules win in every mode.</li>
+            <li><strong>Permission modes.</strong> <em>Manual</em> asks before edits and commands. <em>Accept edits</em> lets file changes through. <em>Plan</em> is read-only. <em>Auto</em> hands approval to a second model. <em>Bypass</em> is for throwaway containers only.</li>
+            <li><strong>The auto-mode classifier.</strong> A separate model reviews each risky action against what you actually asked for, looking for scope creep, unknown infrastructure, data exfiltration. It sees your messages and Claude's tool calls but <strong>not tool results</strong>, so a malicious web page or file can't talk the classifier into approving something. Entering auto mode also drops broad allow rules like <code>Bash(*)</code>.</li>
+            <li><strong>OS-level sandbox.</strong> Optionally, shell commands run inside an operating-system sandbox, Seatbelt on macOS and bubblewrap on Linux/WSL2, that limits which files they can touch and routes network traffic through a proxy with an allow-list of domains. Native Windows isn't supported.</li>
+            <li><strong>Hooks and checkpoints.</strong> Hooks are your own scripts on events like <code>PreToolUse</code>, <code>PostToolUse</code> and <code>Stop</code>. They run outside the model's context and can block a call outright. That is the deterministic layer. Checkpoints snapshot every file before it's edited so you can rewind, but they can't undo remote side effects like a deploy or a database write.</li>
+          </ol>
+
+          <h3>8 · Extension and scale</h3>
+          <ul>
+            <li><strong>MCP</strong> (Model Context Protocol, an open standard) plugs in external systems (Jira, Drive, Slack, databases) as extra tools.</li>
+            <li><strong>Skills</strong> use <em>progressive disclosure</em>: only a one-line description sits in context until the skill is used, then its full instructions load.</li>
+            <li><strong>Parallelism</strong>: subagents run side by side, and whole sessions run in parallel on separate git worktrees or cloud VMs.</li>
+            <li><strong>Headless</strong>: <code>claude -p</code> and the Agent SDK run the same loop in CI or in a service, with hard caps (<code>max_turns</code>, <code>max_budget_usd</code>) and every session saved as JSONL for audit and resume.</li>
+          </ul>
+
+          <div class="callout">
+            <p><strong>PM read:</strong> The model is the part that improves every few months and that competitors can access too. What makes Claude Code work is harness engineering. Search needs no index. Context budgets are managed with compaction and subagents. Request order is built around the cache. Safety comes in layers that don't depend on the model behaving. Most of the product's quirks, and most of its shortcomings below, come from those design trade-offs.</p>
+          </div>
+
+          <h2>Where it boosts development-team productivity</h2>
+          <p>Grouped by the team workflows it changes, not by feature:</p>
+          <h3>1 · Toil gets delegated</h3>
+          <p>Writing missing tests, fixing lint across a project, dependency bumps, merge conflicts, release notes. These are well-specified and easy to check, which is exactly where an agent that runs its own tests does well.</p>
+          <h3>2 · Onboarding and codebase Q&amp;A</h3>
+          <p>"Where is auth handled? Why does this service retry three times?" A new hire can question the repo directly instead of waiting on a senior engineer, which frees up the team's most expensive time.</p>
+          <h3>3 · Team knowledge becomes executable</h3>
+          <p>A shared <code>CLAUDE.md</code>, skills and hooks turn tribal knowledge ("we always run migrations this way") into config that is checked in and applied on every run. The standard gets enforced by the tool, not by review comments.</p>
+          <h3>4 · Automation beyond the laptop</h3>
+          <p>The same engine runs headless in CI for PR review and issue triage, on schedules for overnight CI-failure analysis, and from Slack, where you tag it on a bug report and get a PR back. The work continues when nobody is at a keyboard.</p>
+          <h3>5 · Non-engineers ship small things</h3>
+          <p>Anthropic's own report describes legal, marketing and data teams building internal tools and visualisations. Teams can keep engineers off the small-tool queue.</p>
+          <p><em>First-hand note:</em> I built and iterated on this portfolio site with Claude Code, including the layout, the mobile fixes and the Spotify mockup. The biggest win was speed from idea to a working page. The biggest cost was reviewing everything it produced.</p>
+
+          <h2>The evidence: promising, and contested</h2>
+          <div class="metric-band">
+            <div><b>84%</b><span>of devs use or plan to use AI tools (SO 2025)</span></div>
+            <div><b>46%</b><span>distrust AI output accuracy, up from 31%</span></div>
+            <div><b>−19%</b><span>slower on real tasks in METR's 2025 trial</span></div>
+            <div><b>+20%</b><span>how much faster those same devs <em>felt</em></span></div>
+          </div>
+          <p>Adoption is nearly universal, but trust is falling. METR's randomised trial (16 experienced open-source developers, 246 tasks, early-2025 tools, mostly Cursor with Claude 3.5/3.7) found they were <strong>slower</strong> with AI, even though they believed it made them faster. METR has since said it expects newer tools give a real speed-up and has changed its study design. Still, the finding holds: <strong>perceived productivity is not measured productivity.</strong></p>
+          <p>Vendor case studies, including Anthropic's internal report, show large wins but are self-reported. An honest summary: the gains are real for well-specified, easy-to-check work and much less certain for complex changes in mature codebases.</p>
+
+          <h2>Shortcomings</h2>
+          <ul>
+            <li><strong>The bottleneck moves to review.</strong> Generating code is now cheap; checking it is not. Large agent-written diffs can take longer to review than they took to write, and the reviewer carries the risk.</li>
+            <li><strong>Confident, plausible mistakes.</strong> It can call a task "done" when the tests pass for the wrong reason, or change more than it was asked to. Its output looks the same whether it's right or wrong.</li>
+            <li><strong>Lossy memory in long sessions.</strong> Compaction is a summary, and summaries drop things. A constraint given only in chat can quietly disappear after the window fills. The fix, putting rules in <code>CLAUDE.md</code>, works but depends on the user knowing how the engine behaves.</li>
+            <li><strong>Search costs turns on large codebases.</strong> With no index, a vague question can take several grep-and-read turns to find the right place. In very large codebases a human often still needs to point it at the right folders.</li>
+            <li><strong>Hard-to-predict cost.</strong> Cost depends on hidden factors: how many turns a task takes, how much output each tool dumps into context, and whether the cache is warm. A model switch or a long break can make the next turn far more expensive, and the user never sees why.</li>
+            <li><strong>Safety vs. speed tension.</strong> Manual approval is safe but slow, and constant prompts train people to click "yes" without reading. Auto mode's classifier is a smart answer, but it's a probabilistic model guarding another model. The only deterministic guarantees (deny rules, hooks, the sandbox) are the parts teams have to set up themselves.</li>
+            <li><strong>A power-user product.</strong> The best results depend on a good <code>CLAUDE.md</code>, skills, hooks and knowing when to plan first. Much of the value sits behind a learning curve that teams rarely invest in on purpose.</li>
+            <li><strong>Little visibility into team outcomes.</strong> Leaders can see usage, but it's hard to connect that usage to delivery outcomes like cycle time, defect rate or review load. That's the question METR raises.</li>
+            <li><strong>Platform unevenness.</strong> The shell-heavy design is most at home on macOS and Linux. On native Windows the docs recommend installing Git for Windows so it can use Bash, and the OS sandbox isn't supported at all without WSL2.</li>
+          </ul>
+
+          <h2>What I'd prioritise as PM</h2>
+          <p>Ranked by impact on team adoption against effort to build:</p>
+          <div class="cs-table-wrap">
+            <table class="cs-table">
+              <thead>
+                <tr><th scope="col">#</th><th scope="col">Opportunity</th><th scope="col">Impact</th><th scope="col">Effort</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>1</td><td><strong>Review-ready diffs.</strong> Every change ships with a short "what changed, why, and how I verified it" summary: tests run, commands executed, files touched outside scope flagged.</td><td>High</td><td>Low–Med</td></tr>
+                <tr><td>2</td><td><strong>Outcome analytics for teams.</strong> Link sessions to PRs and show cycle time, revert rate and review time for agent-assisted vs. other work.</td><td>High</td><td>Med–High</td></tr>
+                <tr><td>3</td><td><strong>Cost preview and budgets.</strong> A rough cost estimate before a large task, plus per-task and per-team caps. The SDK already has <code>max_budget_usd</code>; bring that to interactive use and flag cache-busting actions before they happen.</td><td>Med</td><td>Med</td></tr>
+                <tr><td>4</td><td><strong>Guided team setup.</strong> A starter <code>CLAUDE.md</code>, recommended hooks and a permission profile generated from the repo, so value doesn't depend on one power user.</td><td>Med</td><td>Low</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>#1 comes first because it targets the new bottleneck directly and builds trust, and trust is what the survey data says is falling. Some pieces of #2–#4 exist today in basic form; the opportunity is to make them the default rather than something power users have to find.</p>
+
+          <h2>How I'd measure success</h2>
+          <p><strong>North star: accepted agent work per developer-week.</strong> Agent-authored changes merged <em>without</em> being reverted or substantially rewritten within 30 days. It rewards work that sticks, not lines generated.</p>
+          <ul>
+            <li><strong>For review-ready diffs:</strong> median review time on agent PRs, and share of PRs approved without a "what does this do?" comment.</li>
+            <li><strong>For outcome analytics:</strong> share of team admins viewing it weekly, and renewals or seat expansion among teams that use it.</li>
+            <li><strong>For cost controls:</strong> gap between estimated and actual cost, and fewer sessions stopped by surprise limits.</li>
+            <li><strong>Guardrails:</strong> revert rate, security incidents from agent actions, and permission-prompt approval rate (an approval rate near 100% suggests people have stopped reading the prompts).</li>
+          </ul>
+
+          <h2>What I'd validate next</h2>
+          <ul>
+            <li>Interview engineering leads to confirm that review load, not generation, is the pain they'd pay to fix.</li>
+            <li>Test whether "verified how" summaries actually change reviewer behaviour, or just get skimmed.</li>
+            <li>Check whether outcome analytics would be trusted, or read as surveillance by developers.</li>
+          </ul>
+
+          <h2 id="sources">Sources</h2>
+          <ul class="cs-sources">
+            <li><a href="https://code.claude.com/docs/en/overview" target="_blank" rel="noopener">Claude Code documentation: overview</a></li>
+            <li><a href="https://code.claude.com/docs/en/how-claude-code-works" target="_blank" rel="noopener">Claude Code documentation: how Claude Code works</a></li>
+            <li><a href="https://code.claude.com/docs/en/agent-sdk/agent-loop" target="_blank" rel="noopener">Claude Code documentation: how the agent loop works</a></li>
+            <li><a href="https://code.claude.com/docs/en/context-window" target="_blank" rel="noopener">Claude Code documentation: explore the context window</a></li>
+            <li><a href="https://code.claude.com/docs/en/prompt-caching" target="_blank" rel="noopener">Claude Code documentation: how Claude Code uses prompt caching</a></li>
+            <li><a href="https://code.claude.com/docs/en/permission-modes" target="_blank" rel="noopener">Claude Code documentation: permission modes &amp; auto mode</a> · <a href="https://code.claude.com/docs/en/sandboxing" target="_blank" rel="noopener">sandboxing</a> · <a href="https://code.claude.com/docs/en/memory" target="_blank" rel="noopener">memory</a></li>
+            <li><a href="https://claude.com/blog/lessons-from-building-claude-code-prompt-caching-is-everything" target="_blank" rel="noopener">Anthropic: Lessons from building Claude Code, prompt caching is everything</a></li>
+            <li><a href="https://x.com/bcherny/status/2017824286489383315" target="_blank" rel="noopener">Boris Cherny on RAG vs. agentic search in Claude Code</a></li>
+            <li><a href="https://claude.com/blog/how-anthropic-teams-use-claude-code" target="_blank" rel="noopener">Anthropic: How Anthropic teams use Claude Code (Jul 2025)</a></li>
+            <li><a href="https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/" target="_blank" rel="noopener">METR: Measuring the impact of early-2025 AI on experienced open-source developer productivity</a></li>
+            <li><a href="https://metr.org/blog/2026-02-24-uplift-update/" target="_blank" rel="noopener">METR: Changing our developer productivity experiment design (Feb 2026)</a></li>
+            <li><a href="https://survey.stackoverflow.co/2025/ai" target="_blank" rel="noopener">Stack Overflow Developer Survey 2025: AI</a></li>
+          </ul>
+
+          <div class="cs-next">
+            <a href="./case-study-1.html">← CS-01 · Spotify "Nearby"</a>
+            <a href="./index.html#contact">Get in touch →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot wrap">
+    <span>© <span data-year></span> Elijah D'Souza</span>
+    <span><a class="foot__link" href="./index.html">Back to home</a></span>
+  </footer>
+
+  <script src="./main.js"></script>
+</body>
+</html>

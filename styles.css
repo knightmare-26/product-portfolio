@@ -342,3 +342,95 @@ p { margin: 0; }
 .cs-next__note { font-family: var(--font-mono); font-size: var(--step--1); color: var(--muted); }
 .cs-next a { font-family: var(--font-display); font-weight: 700; font-size: var(--step-1); text-decoration: none; }
 .cs-next a:hover { color: var(--accent); }
+
+.cs-body code {
+  font-family: var(--font-mono); font-size: 0.88em;
+  background: var(--surface-2); padding: 0.1em 0.35em; border-radius: 3px;
+}
+
+.cs-figure {
+  margin: 2rem 0 0; padding: 1.5rem;
+  background: var(--surface); border: 1px solid var(--hairline); border-radius: var(--radius);
+}
+.cs-figure svg { display: block; width: 100%; height: auto; }
+.cs-figure figcaption {
+  margin-top: 1rem; font-family: var(--font-mono); font-size: var(--step--1); color: var(--muted);
+}
+.fig-ring { fill: none; stroke: var(--hairline); stroke-width: 1.5; stroke-dasharray: 4 5; }
+.fig-core { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+.fig-node { fill: var(--surface-2); stroke: color-mix(in srgb, var(--accent) 45%, transparent); }
+.fig-line { fill: none; stroke: var(--accent); stroke-width: 1.5; }
+.fig-arrowhead { fill: var(--accent); }
+.fig-core-t { fill: var(--ink); font-family: var(--font-display); font-weight: 700; font-size: 17px; }
+.fig-node-t { fill: var(--ink); font-family: var(--font-body); font-weight: 600; font-size: 13px; }
+.fig-label { fill: var(--ink); font-family: var(--font-mono); font-size: 13px; }
+.fig-sub { fill: var(--muted); font-family: var(--font-mono); font-size: 11px; }
+
+.cs-table-wrap { margin-top: 1.5rem; overflow-x: auto; }
+.cs-table { width: 100%; border-collapse: collapse; font-size: var(--step--1); min-width: 480px; }
+.cs-table th, .cs-table td {
+  text-align: left; vertical-align: top; padding: 0.75rem 0.9rem;
+  border-bottom: 1px solid var(--hairline);
+}
+.cs-table th {
+  font-family: var(--font-mono); font-weight: 500; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+.cs-table td:first-child { font-family: var(--font-mono); color: var(--signal); }
+.cs-table td:nth-child(3), .cs-table td:nth-child(4) { white-space: nowrap; font-family: var(--font-mono); }
+
+.cs-table--plain td:first-child { color: var(--ink); white-space: nowrap; }
+.cs-table--plain td:nth-child(3), .cs-table--plain td:nth-child(4) { white-space: normal; font-family: var(--font-body); }
+.cs-table--plain code { white-space: nowrap; }
+
+.fig-step { fill: var(--ground); stroke: var(--hairline); }
+.fig-line--done { stroke: var(--signal); }
+.fig-bracket { fill: none; stroke: var(--muted); stroke-width: 1; }
+.fig-seg1 { fill: color-mix(in srgb, var(--accent) 55%, var(--ground)); }
+.fig-seg2 { fill: color-mix(in srgb, var(--accent) 30%, var(--ground)); }
+.fig-seg3 { fill: var(--surface-2); stroke: var(--hairline); }
+.fig-tick { stroke: var(--hairline); }
+.fig-rule { stroke: var(--hairline); }
+
+.cs-trace { list-style: none; padding-left: 0 !important; }
+.cs-trace li {
+  display: grid; grid-template-columns: 4.5rem 1fr; gap: 0.75rem;
+  padding: 0.6rem 0; border-bottom: 1px solid var(--hairline-2); margin-top: 0;
+}
+.cs-trace li > span {
+  font-family: var(--font-mono); font-size: var(--step--1); color: var(--signal); padding-top: 0.15rem;
+}
+
+.cs-sources { font-size: var(--step--1); }
+
+/* =======================================================
+   Print / PDF — light ink-friendly version of the same tokens
+   ======================================================= */
+@media print {
+  @page { size: A4; margin: 16mm 14mm; }
+  :root {
+    --ground: #ffffff; --surface: #f6f6fa; --surface-2: #ececf3;
+    --ink: #15161f; --muted: #555a6e;
+    --hairline: rgba(0, 0, 0, 0.14); --hairline-2: rgba(0, 0, 0, 0.08);
+    --accent: #5b4fd6; --accent-ink: #3f34b0; --accent-soft: #f0eefd;
+    --signal: #c23a52;
+    --step--1: 8.5pt; --step-0: 10pt; --step-1: 12.5pt; --step-2: 16pt; --step-3: 24pt;
+  }
+  body { background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .nav, .skip, .cs-back, .cs-next, .foot { display: none !important; }
+  .wrap { max-width: none; padding-inline: 0; }
+  .section { padding-block: 0; }
+  .cs-hero { padding-block: 0 1.25rem; }
+  .cs-hero h1 { max-width: none; }
+  .cs-hero .lead { max-width: none; }
+  .cs-layout { grid-template-columns: 1fr; gap: 1.25rem; }
+  .cs-meta { position: static; grid-template-columns: repeat(5, 1fr); gap: 0.75rem; }
+  .cs-body p, .cs-body ul, .cs-body ol { max-width: none; }
+  .cs-body h2 { margin-top: 1.75rem; padding-top: 1.25rem; break-after: avoid; }
+  .cs-body h3 { break-after: avoid; }
+  .cs-figure, .callout, .metric-band, .cs-table, .cs-trace li, blockquote { break-inside: avoid; }
+  .cs-table-wrap { overflow: visible; }
+  .cs-table { min-width: 0; }
+  a { color: var(--accent-ink); }
+  .cs-sources a::after { content: " — " attr(href); color: var(--muted); word-break: break-all; }
+}
