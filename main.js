@@ -169,7 +169,8 @@ document.querySelectorAll("[data-year]").forEach(function (el) {
   window.addEventListener("load", function () {
     sizeWork();
     measureDock();
-    if (location.hash) land(location.hash.slice(1), false);
+    // run after the browser's own jump to the #anchor, which would otherwise win
+    if (location.hash) setTimeout(function () { land(location.hash.slice(1), false); frame(); }, 60);
     frame();
   });
   frame();
@@ -183,18 +184,69 @@ document.querySelectorAll("[data-year]").forEach(function (el) {
   // real Barcelona tracks; taste = match to a listener who likes indie & electronic,
   // city = illustrative local popularity
   const TRACKS = [
-    { t: "Do I Wanna Know?", a: "Arctic Monkeys", tag: "Your taste", taste: 0.95, city: 0, img: "https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e024ae1c4c5c45aabe565499163" },
-    { t: "Delilah (pull me out of this)", a: "Fred again..", tag: "Your taste", taste: 0.9, city: 0, img: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02c652ae235973f4731ec6ac50" },
-    { t: "MALAMENTE", a: "ROSALÍA", tag: "Local", taste: 0.55, city: 1, img: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02c46794640f6860a8c287f779" },
-    { t: "Destiny (feat. Pional)", a: "John Talabot", tag: "Local · deep cut", taste: 0.8, city: 0.5, img: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02fc35362437ab0a2eded789f2" },
-    { t: "Fiebre", a: "Bad Gyal", tag: "Local", taste: 0.5, city: 0.9, img: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02e105ae2f8cd47fa9909934f9" },
-    { t: "Teresa Rampell", a: "Manel", tag: "Local · deep cut", taste: 0.62, city: 0.72, img: "https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02c429af8a3166ebbd1d9d61cb" }
+    { sp: "5FVd6KXrgO9B3JPmC8OPst", t: "Do I Wanna Know?", a: "Arctic Monkeys", tag: "Your taste", taste: 0.95, city: 0, img: "https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e024ae1c4c5c45aabe565499163" },
+    { sp: "0Ftrkz2waaHcjKb4qYvLmz", t: "Delilah (pull me out of this)", a: "Fred again..", tag: "Your taste", taste: 0.9, city: 0, img: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02c652ae235973f4731ec6ac50" },
+    { sp: "5zOAudPQIs5U8zP6LQGHmH", t: "MALAMENTE", a: "ROSALÍA", tag: "Local", taste: 0.55, city: 1, img: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02c46794640f6860a8c287f779" },
+    { sp: "6gmu5y1petI3ovZRpnqMZv", t: "Destiny (feat. Pional)", a: "John Talabot", tag: "Local · deep cut", taste: 0.8, city: 0.5, img: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02fc35362437ab0a2eded789f2" },
+    { sp: "2DAE5Hto4cgoC8xX9I2QJU", t: "Fiebre", a: "Bad Gyal", tag: "Local", taste: 0.5, city: 0.9, img: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02e105ae2f8cd47fa9909934f9" },
+    { sp: "3gQUxFnCnNSvcb8iJ2zicc", t: "Teresa Rampell", a: "Manel", tag: "Local · deep cut", taste: 0.62, city: 0.72, img: "https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02c429af8a3166ebbd1d9d61cb" }
   ];
+  const PLAY = '<svg viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M3 1.6v8.8L10.4 6z"/></svg>';
+  const PAUSE = '<svg viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><rect x="2" y="1.5" width="3" height="9" rx=".6"/><rect x="7" y="1.5" width="3" height="9" rx=".6"/></svg>';
   list.innerHTML = TRACKS.map(function (x, i) {
-    return '<li style="--r:' + i + '"><span class="rk"></span><span class="art"><img src="' + x.img + '" alt="" loading="lazy" /></span>' +
-      '<span class="t"><b>' + x.t + "</b><span>" + x.a + " · " + x.tag + "</span></span></li>";
+    return '<li style="--r:' + i + '"><button type="button" data-i="' + i + '" aria-label="Play ' + x.t + " by " + x.a + '">' +
+      '<span class="rk"></span><span class="art"><img src="' + x.img + '" alt="" loading="lazy" /></span>' +
+      '<span class="t"><b>' + x.t + "</b><span>" + x.a + " · " + x.tag + '</span></span><span class="pp">' + PLAY + "</span></button></li>";
   }).join("");
   const rows = Array.from(list.children);
+
+  // playback: the real recordings through Spotify's official embed, capped at a
+  // 30-second preview for every visitor
+  const player = { ctrl: null, i: null, paused: true, pending: null };
+  const PREVIEW_MS = 30000;
+  function paint() {
+    rows.forEach(function (li, i) {
+      const on = player.i === i && !player.paused;
+      li.classList.toggle("is-current", player.i === i);
+      li.querySelector(".pp").innerHTML = on ? PAUSE : PLAY;
+      li.querySelector("button").setAttribute("aria-label", (on ? "Pause " : "Play ") + TRACKS[i].t + " by " + TRACKS[i].a);
+    });
+  }
+  function playTrack(i) {
+    if (player.ctrl && player.i === i) { player.ctrl.togglePlay(); return; }
+    player.i = i;
+    paint();
+    if (!player.ctrl) { player.pending = i; return; }
+    player.ctrl.loadUri("spotify:track:" + TRACKS[i].sp);
+    player.ctrl.play();
+  }
+  list.addEventListener("click", function (e) {
+    const b = e.target.closest("button[data-i]");
+    if (b) playTrack(Number(b.dataset.i));
+  });
+  const slot = document.getElementById("blend-player");
+  const prevReady = window.onSpotifyIframeApiReady;
+  window.onSpotifyIframeApiReady = function (IFrameAPI) {
+    if (prevReady) prevReady(IFrameAPI);
+    if (!slot) return;
+    const start = player.pending != null ? player.pending : 2;
+    const mount = document.createElement("div");
+    slot.replaceChildren(mount);
+    IFrameAPI.createController(mount, { uri: "spotify:track:" + TRACKS[start].sp, width: "100%", height: 80 }, function (ctrl) {
+      player.ctrl = ctrl;
+      if (player.i == null) player.i = start;
+      ctrl.addListener("playback_update", function (e) {
+        // previews only: stop at 30 seconds (even for signed-in Spotify users), and treat
+        // the end of Spotify's own preview as stopped (it keeps reporting "playing")
+        const ended = e.data.duration > 0 && e.data.position >= e.data.duration - 250;
+        if (!e.data.isPaused && (e.data.position >= PREVIEW_MS || ended)) { ctrl.pause(); ctrl.seek(0); }
+        const paused = !!e.data.isPaused || e.data.position >= PREVIEW_MS || ended;
+        if (paused !== player.paused) { player.paused = paused; paint(); }
+      });
+      if (player.pending != null) ctrl.play();
+      paint();
+    });
+  };
   const q = document.getElementById("blend-q");
   function update() {
     const w = Number(input.value) / 100;

@@ -315,7 +315,7 @@
           </div>
         </div>
       </div>
-      <p class="phone-cap">Tap any track to play it through Spotify's player: a preview, or the full song if you're logged in to Spotify.</p>
+      <p class="phone-cap">Tap any track to hear a 30-second preview of the real song through Spotify's player.</p>
     </div>
   </div>
 
@@ -745,7 +745,7 @@ for (const [k] of RULES) $(`r-${k}`).addEventListener("change", e => { state.rul
 $("hours").addEventListener("input", e => { state.hours = Number(e.target.value); update(); });
 $("week").addEventListener("change", e => { state.week = Number(e.target.value); update(); });
 // playback: real tracks through Spotify's embedded player (iFrame API).
-// Logged-out visitors hear a preview; logged-in Spotify users get the full track.
+// Every visitor hears a 30-second preview (capped below, even for signed-in Spotify users).
 const player = { ctrl: null, id: null, paused: true, pending: null };
 function loadTrack(id, autoplay){
   if (player.id === id && !autoplay) return;
@@ -772,7 +772,11 @@ window.onSpotifyIframeApiReady = function (IFrameAPI) {
   IFrameAPI.createController(mount, { uri: "spotify:track:" + T[first.id].sp, width: "100%", height: 80 }, function (ctrl) {
     player.ctrl = ctrl;
     ctrl.addListener("playback_update", function (e) {
-      const paused = !!e.data.isPaused;
+      // previews only: stop at 30 seconds (even for signed-in Spotify users), and treat
+      // the end of Spotify's own preview as stopped (it keeps reporting "playing")
+      const ended = e.data.duration > 0 && e.data.position >= e.data.duration - 250;
+      if (!e.data.isPaused && (e.data.position >= 30000 || ended)) { ctrl.pause(); ctrl.seek(0); }
+      const paused = !!e.data.isPaused || e.data.position >= 30000 || ended;
       if (paused !== player.paused) { player.paused = paused; update(); }
     });
     if (first.autoplay) ctrl.play();

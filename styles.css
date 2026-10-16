@@ -721,13 +721,29 @@ p { margin: 0; }
 .blend__slider input { width: 100%; accent-color: var(--accent); }
 .blend__ends { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
 .blend__list { position: relative; list-style: none; margin: 1rem 0 0; padding: 0; height: calc(6 * 3.5rem); }
+.blend__list { height: calc(6 * 3.25rem); }
 .blend__list li {
-  position: absolute; left: 0; right: 0; height: 3.1rem;
-  display: flex; align-items: center; gap: 0.75rem; padding: 0 0.8rem;
-  border-radius: 12px; background: var(--ground); border: 1px solid var(--hairline);
-  transform: translateY(calc(var(--r) * 3.5rem));
+  position: absolute; left: 0; right: 0; height: 2.9rem;
+  transform: translateY(calc(var(--r) * 3.25rem));
   transition: transform 0.45s var(--ease);
 }
+.blend__list button {
+  width: 100%; height: 100%; display: flex; align-items: center; gap: 0.75rem; padding: 0 0.8rem;
+  border-radius: 12px; background: var(--ground); border: 1px solid var(--hairline);
+  font: inherit; color: inherit; text-align: left; cursor: pointer;
+  transition: border-color 0.2s var(--ease), background 0.2s var(--ease);
+}
+.blend__list button:hover { border-color: var(--accent); }
+.blend__list li.is-current button { border-color: var(--accent); background: var(--accent-soft); }
+.blend__list .pp {
+  width: 1.9rem; height: 1.9rem; flex: none; border-radius: 50%;
+  display: grid; place-items: center; background: var(--accent-ink); color: #fff;
+}
+:root[data-theme="dark"] .blend__list .pp { background: var(--accent); color: #0c2236; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .blend__list .pp { background: var(--accent); color: #0c2236; } }
+.blend__list .pp svg { width: 0.7rem; height: 0.7rem; }
+.blend__player { margin-top: 0.9rem; min-height: 80px; }
+.blend__player iframe { display: block; border: 0; border-radius: 12px; }
 .blend__list .art { width: 2.1rem; height: 2.1rem; border-radius: 6px; overflow: hidden; flex: none; background: var(--surface-2); }
 .blend__list .art img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .blend__list .t { flex: 1; min-width: 0; }
@@ -793,7 +809,10 @@ p { margin: 0; }
   .split__right { padding-top: 1.5rem; padding-bottom: 4.5rem; gap: 0.8rem; transform: translateY(calc((1 - min(1, var(--p, 0) * 2.2)) * 100%)); }
   .split__right h2 { font-size: var(--step-2); }
   .blend__q { font-size: var(--step-1); }
-  .blend__list { height: calc(4 * 3.5rem); overflow: hidden; }
+  /* on phones the "Try it" chapter isn't pinned, so all six songs fit */
+  #products.pin { height: auto; }
+  #products .stage { position: relative; height: auto; overflow: visible; }
+  #products .split__right { transform: none; }
   .s-cta { padding: 0.6rem 1rem; font-size: 0.85rem; }
   .s-mark small { display: none; }
   .s-head { padding-block: 0.7rem; background: color-mix(in srgb, var(--ground) 82%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--hairline-2); }
