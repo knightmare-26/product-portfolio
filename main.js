@@ -145,18 +145,19 @@ document.querySelectorAll("[data-year]").forEach(function (el) {
   const input = document.getElementById("blend");
   const list = document.getElementById("blend-list");
   if (!input || !list) return;
-  // taste = match to a listener who likes indie & electronic; city = Barcelona's local popularity
+  // real Barcelona tracks; taste = match to a listener who likes indie & electronic,
+  // city = illustrative local popularity
   const TRACKS = [
-    { t: "Pulse Theory", a: "Kilowatt", tag: "Your taste", taste: 0.95, city: 0, art: ["#00b4d8", "#03045e"], e: "🔊" },
-    { t: "Northern Lights", a: "Glass Harbour", tag: "Your taste", taste: 0.9, city: 0, art: ["#4d6a8a", "#1e2b3a"], e: "🌌" },
-    { t: "Cala Nocturna", a: "Nit Elèctrica", tag: "Local", taste: 0.72, city: 0.97, art: ["#8a2be2", "#c724b1"], e: "🎧" },
-    { t: "Ona Sintètica", a: "Rosa Vent", tag: "Local · small act", taste: 0.78, city: 0.55, art: ["#b0306b", "#4d0f2e"], e: "🌊" },
-    { t: "Duende Digital", a: "Flama Roja", tag: "Local", taste: 0.5, city: 0.93, art: ["#e2725b", "#a13d2c"], e: "🎸" },
-    { t: "Verano Infinito", a: "Lía Mar", tag: "Local", taste: 0.4, city: 1, art: ["#f2a541", "#c45b1d"], e: "☀️" }
+    { t: "Do I Wanna Know?", a: "Arctic Monkeys", tag: "Your taste", taste: 0.95, city: 0, img: "https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e024ae1c4c5c45aabe565499163" },
+    { t: "Delilah (pull me out of this)", a: "Fred again..", tag: "Your taste", taste: 0.9, city: 0, img: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02c652ae235973f4731ec6ac50" },
+    { t: "MALAMENTE", a: "ROSALÍA", tag: "Local", taste: 0.55, city: 1, img: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02c46794640f6860a8c287f779" },
+    { t: "Destiny (feat. Pional)", a: "John Talabot", tag: "Local · deep cut", taste: 0.8, city: 0.5, img: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02fc35362437ab0a2eded789f2" },
+    { t: "Fiebre", a: "Bad Gyal", tag: "Local", taste: 0.5, city: 0.9, img: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02e105ae2f8cd47fa9909934f9" },
+    { t: "Teresa Rampell", a: "Manel", tag: "Local · deep cut", taste: 0.62, city: 0.72, img: "https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02c429af8a3166ebbd1d9d61cb" }
   ];
   list.innerHTML = TRACKS.map(function (x, i) {
-    return '<li style="--r:' + i + '"><span class="rk"></span><span class="art" style="background:linear-gradient(145deg,' + x.art[0] + "," + x.art[1] + ')">' + x.e +
-      '</span><span class="t"><b>' + x.t + "</b><span>" + x.a + " · " + x.tag + "</span></span></li>";
+    return '<li style="--r:' + i + '"><span class="rk"></span><span class="art"><img src="' + x.img + '" alt="" loading="lazy" /></span>' +
+      '<span class="t"><b>' + x.t + "</b><span>" + x.a + " · " + x.tag + "</span></span></li>";
   }).join("");
   const rows = Array.from(list.children);
   const q = document.getElementById("blend-q");

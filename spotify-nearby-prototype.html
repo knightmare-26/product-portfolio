@@ -134,7 +134,7 @@
   .shelf-title{font-size:15px; font-weight:800; padding:14px 16px 10px}
   .hscroll{display:flex; gap:12px; overflow-x:auto; padding:0 16px 6px; scrollbar-width:none}
   .hscroll::-webkit-scrollbar{display:none}
-  .tile{flex:0 0 104px; cursor:pointer; background:none; border:0; padding:0; color:inherit; text-align:left; font:inherit}
+  .tile{flex:0 0 104px; width:104px; min-width:0; overflow:hidden; cursor:pointer; background:none; border:0; padding:0; color:inherit; text-align:left; font:inherit}
   .art{width:104px; height:104px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:26px; margin-bottom:7px}
   .tile-label{font-size:12.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
   .tile-sub{font-size:11px; color:var(--dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
@@ -165,7 +165,14 @@
   .off p{color:var(--dim); font-size:13px; margin:0 0 18px}
   .off button{font:inherit; font-weight:700; font-size:13px; background:#fff; color:#000; border:0; border-radius:999px; padding:10px 18px; cursor:pointer}
   .nowplaying{margin:6px 10px 8px; background:var(--card-hover); border-radius:6px; padding:8px 10px; display:flex; align-items:center; gap:10px; position:relative; overflow:hidden}
-  .np-progress{position:absolute; left:0; bottom:0; height:2px; background:var(--green); width:0; transition:width .2s linear}
+  .art img, .trk-art img{width:100%; height:100%; object-fit:cover; border-radius:inherit; display:block}
+  .trk-art{overflow:hidden; background:#282828}
+  .art{overflow:hidden; background:#282828}
+  #np.nowplaying{padding:0; background:transparent; min-height:80px; display:block}
+  #np iframe{display:block; border:0; border-radius:12px}
+  .np-link{display:flex; align-items:center; gap:10px; padding:8px 10px; background:#282828; border-radius:12px; color:#fff; text-decoration:none}
+  .np-link img{width:44px; height:44px; border-radius:4px}
+  .np-link b{display:block; font-size:12.5px} .np-link small{display:block; font-size:11px; color:#b3b3b3}
   @keyframes prog{to{width:100%}}
   .np-art{width:34px; height:34px; border-radius:3px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:14px}
   .np-text{flex:1; min-width:0}
@@ -308,7 +315,7 @@
           </div>
         </div>
       </div>
-      <p class="phone-cap">Tap a track to hear a 20-second sketch. The artists are fictional, so each preview is generated in your browser in that track's genre.</p>
+      <p class="phone-cap">Tap any track to play it through Spotify's player: a preview, or the full song if you're logged in to Spotify.</p>
     </div>
   </div>
 
@@ -341,13 +348,14 @@
     </div>
   </div>
 
-  <p class="foot">Fictional artists, streams and listeners, made up to illustrate the model. Not Spotify data, and not an actual Spotify product. The weights are the case study's hypothesis, not a tuned model.</p>
+  <p class="foot">Real tracks from each city's scene, played through Spotify's official embed. Stream counts, audio features and listener profiles are illustrative, not Spotify data, and "Nearby" is a concept, not an actual Spotify product. The weights are the case study's hypothesis, not a tuned model.</p>
 </div>
 
-<script src="./nearby-synth.js"></script>
+<script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
 <script>
 /* =========================================================================
-   Data — all fictional
+   Data — real tracks (played through Spotify's embed); stream counts,
+   audio features and listeners are illustrative, not Spotify data
    ========================================================================= */
 const GENRES = {
   indie:"Indie", electronic:"Electronic", flamenco:"Flamenco-fusion", pop:"Pop", country:"Country",
@@ -355,80 +363,73 @@ const GENRES = {
   jrock:"J-rock", hiphop:"Hip-hop", afrobeats:"Afrobeats", amapiano:"Amapiano", rnb:"R&B"
 };
 
-// features: [energy, acousticness, danceability, valence], each 0–1
-// streams: trailing-7-day plays inside a city's local listening index
+// features: [energy, acousticness, danceability, valence], each 0–1 (estimated)
+// streams: illustrative trailing-7-day plays inside a city's local listening index
 const TRACKS = [
-  // Barcelona
-  {id:"b1", title:"Cala Nocturna", artist:"Nit Elèctrica", home:"barcelona", g:{electronic:.8,pop:.2}, f:[.82,.1,.85,.45], streams:{barcelona:184000}, age:21, lt:false, art:["#8a2be2","#c724b1"], e:"🎧"},
-  {id:"b2", title:"Poble Sec 4AM", artist:"Nit Elèctrica", home:"barcelona", g:{electronic:1}, f:[.88,.05,.8,.35], streams:{barcelona:121000}, age:140, lt:false, art:["#5b1e9e","#a8209a"], e:"🌃"},
-  {id:"b3", title:"Duende Digital", artist:"Flama Roja", home:"barcelona", g:{flamenco:.7,electronic:.3}, f:[.7,.45,.7,.6], streams:{barcelona:156000}, age:35, lt:false, art:["#e2725b","#a13d2c"], e:"🎸"},
-  {id:"b4", title:"Rumba del Port", artist:"Flama Roja", home:"barcelona", g:{flamenco:.9,pop:.1}, f:[.65,.7,.75,.8], streams:{barcelona:98000}, age:300, lt:false, art:["#c4502f","#7a2412"], e:"💃"},
-  {id:"b5", title:"Llum de Tardor", artist:"Marea Blava", home:"barcelona", g:{indie:.9,folk:.1}, f:[.45,.6,.4,.4], streams:{barcelona:23000}, age:12, lt:true, art:["#2b7a78","#0f3d3a"], e:"🎵"},
-  {id:"b6", title:"Carrer Verdi", artist:"Els Fars", home:"barcelona", g:{indie:1}, f:[.6,.35,.5,.55], streams:{barcelona:14500}, age:60, lt:true, art:["#2e5a88","#14273d"], e:"🏮"},
-  {id:"b7", title:"Ona Sintètica", artist:"Rosa Vent", home:"barcelona", g:{electronic:.7,indie:.3}, f:[.7,.15,.7,.5], streams:{barcelona:9800}, age:8, lt:true, art:["#b0306b","#4d0f2e"], e:"🌊"},
-  {id:"b8", title:"Verano Infinito", artist:"Lía Mar", home:"barcelona", g:{pop:1}, f:[.75,.2,.8,.85], streams:{barcelona:240000}, age:50, lt:false, art:["#f2a541","#c45b1d"], e:"☀️"},
-  // Girona (small city — below the cold-start threshold)
-  {id:"g1", title:"Pedra i Riu", artist:"Ter Sound", home:"girona", g:{indie:.6,folk:.4}, f:[.4,.75,.35,.5], streams:{girona:2100}, age:30, lt:true, art:["#5f7f3a","#2b3b16"], e:"🪨"},
-  // Nashville
-  {id:"n1", title:"Backroad Blue", artist:"Cross Creek", home:"nashville", g:{country:.9,americana:.1}, f:[.6,.6,.5,.6], streams:{nashville:142000}, age:28, lt:false, art:["#c98a3c","#7a4b17"], e:"🤠"},
-  {id:"n2", title:"Gravel & Gold", artist:"Cross Creek", home:"nashville", g:{country:1}, f:[.65,.55,.55,.7], streams:{nashville:110000}, age:190, lt:false, art:["#b0782e","#5e3a0e"], e:"🛻"},
-  {id:"n3", title:"Five-String Sunday", artist:"Rye Hollow", home:"nashville", g:{bluegrass:.9,folk:.1}, f:[.55,.9,.5,.75], streams:{nashville:18000}, age:45, lt:true, art:["#8b5e3c","#4a2f18"], e:"🪕"},
-  {id:"n4", title:"Rust Belt Hymn", artist:"Dust & Wire", home:"nashville", g:{americana:.8,folk:.2}, f:[.5,.7,.35,.35], streams:{nashville:61000}, age:15, lt:false, art:["#b0433a","#5e211b"], e:"🎙️"},
-  {id:"n5", title:"Porch Light", artist:"June Calloway", home:"nashville", g:{folk:.8,country:.2}, f:[.3,.9,.25,.45], streams:{nashville:12500}, age:9, lt:true, art:["#d4a373","#6b4a2b"], e:"🕯️"},
-  {id:"n7", title:"Ryman Rain", artist:"The Hatch Sisters", home:"nashville", g:{americana:.5,folk:.5}, f:[.4,.85,.3,.5], streams:{nashville:8400}, age:16, lt:true, art:["#6d597a","#2d2236"], e:"🌧️"},
-  {id:"n6", title:"Neon Saddle", artist:"Brody Lane", home:"nashville", g:{country:.6,pop:.4}, f:[.8,.3,.7,.8], streams:{nashville:205000}, age:40, lt:false, art:["#e05d8a","#7a1f46"], e:"🌟"},
-  // Tokyo
-  {id:"t1", title:"Midnight Shuto", artist:"Yoru no Kaze", home:"tokyo", g:{citypop:.9,pop:.1}, f:[.6,.3,.75,.7], streams:{tokyo:198000}, age:33, lt:false, art:["#3a7bd5","#1c2f6b"], e:"🌆"},
-  {id:"t2", title:"Hikari Engine", artist:"Static Bloom", home:"tokyo", g:{jrock:1}, f:[.9,.1,.5,.55], streams:{tokyo:150000}, age:70, lt:false, art:["#d63a3a","#5c0f0f"], e:"⚡"},
-  {id:"t3", title:"Sakura Signal", artist:"Pastel☆Grid", home:"tokyo", g:{pop:.8,electronic:.2}, f:[.85,.1,.85,.9], streams:{tokyo:230000}, age:18, lt:false, art:["#ff8fb1","#c2185b"], e:"🌸"},
-  {id:"t4", title:"Shibuya Static", artist:"MC Tsuki", home:"tokyo", g:{hiphop:1}, f:[.75,.1,.8,.4], streams:{tokyo:21000}, age:25, lt:true, art:["#444","#111"], e:"🎤"},
-  {id:"t5", title:"Kissaten Tapes", artist:"Ame Library", home:"tokyo", g:{citypop:.6,indie:.4}, f:[.45,.5,.6,.6], streams:{tokyo:11000}, age:11, lt:true, art:["#9c7c5c","#4a3826"], e:"☕"},
-  {id:"t6", title:"Koenji Loop", artist:"Neko Tape", home:"tokyo", g:{electronic:.6,indie:.4}, f:[.65,.2,.7,.55], streams:{tokyo:7600}, age:10, lt:true, art:["#14b8a6","#134e4a"], e:"🐈"},
-  // Lagos
-  {id:"l1", title:"Island Fever", artist:"Tobi Ade", home:"lagos", g:{afrobeats:1}, f:[.75,.2,.9,.8], streams:{lagos:221000}, age:26, lt:false, art:["#f2b134","#b0631b"], e:"🌴"},
-  {id:"l2", title:"Log Drum Lekki", artist:"Kemi & DJ Sola", home:"lagos", g:{amapiano:.8,afrobeats:.2}, f:[.7,.15,.9,.65], streams:{lagos:176000}, age:14, lt:false, art:["#2fa36b","#0f4d31"], e:"🥁"},
-  {id:"l3", title:"Yaba Nights", artist:"Ayo Lagos", home:"lagos", g:{afrobeats:.6,rnb:.4}, f:[.55,.3,.75,.55], streams:{lagos:19000}, age:20, lt:true, art:["#7b3fa0","#33114d"], e:"🌙"},
-  {id:"l4", title:"Third Mainland", artist:"Femi Ojo", home:"lagos", g:{hiphop:.6,afrobeats:.4}, f:[.8,.1,.8,.5], streams:{lagos:13000}, age:7, lt:true, art:["#3d5a80","#1b263b"], e:"🌉"},
-  {id:"l5", title:"Ikoyi Blue", artist:"Zainab", home:"lagos", g:{rnb:.7,afrobeats:.3}, f:[.45,.35,.65,.5], streams:{lagos:64000}, age:55, lt:false, art:["#3a86ff","#1d3557"], e:"💙"},
-  {id:"l6", title:"Surulere Sunday", artist:"Bisi Strings", home:"lagos", g:{afrobeats:.7,folk:.3}, f:[.55,.6,.7,.8], streams:{lagos:9100}, age:22, lt:true, art:["#e9c46a","#8a5a1c"], e:"🎺"},
-  // Global favourites — not local to any index; personal history only
-  {id:"x1", title:"Northern Lights", artist:"Glass Harbour", home:null, g:{indie:1}, f:[.55,.4,.45,.45], streams:{}, age:400, lt:false, art:["#4d6a8a","#1e2b3a"], e:"🌌"},
-  {id:"x2", title:"Pulse Theory", artist:"Kilowatt", home:null, g:{electronic:1}, f:[.85,.05,.8,.5], streams:{}, age:220, lt:false, art:["#00b4d8","#03045e"], e:"🔊"},
-  {id:"x3", title:"Hometown Radio", artist:"Wade Miller", home:null, g:{country:1}, f:[.55,.65,.5,.65], streams:{}, age:500, lt:false, art:["#a3623a","#4a2a14"], e:"📻"},
-  {id:"x4", title:"Holler", artist:"Appalachia Kids", home:null, g:{bluegrass:.6,folk:.4}, f:[.5,.85,.45,.6], streams:{}, age:330, lt:false, art:["#6a994e","#283618"], e:"⛰️"},
-  {id:"x5", title:"Lagos to London", artist:"Kojo Kay", home:null, g:{afrobeats:.6,hiphop:.4}, f:[.78,.15,.85,.7], streams:{}, age:260, lt:false, art:["#e76f51","#6d2a1b"], e:"✈️"},
-  {id:"x6", title:"Block Party", artist:"Dre Atlas", home:null, g:{hiphop:1}, f:[.85,.1,.85,.6], streams:{}, age:180, lt:false, art:["#555","#1a1a1a"], e:"🏙️"},
-  {id:"x7", title:"Velvet", artist:"Nia Rose", home:null, g:{rnb:1}, f:[.45,.3,.7,.55], streams:{}, age:150, lt:false, art:["#9d4edd","#3c096c"], e:"🌹"},
-  {id:"x8", title:"Weekend Static", artist:"The Lumens", home:null, g:{pop:.6,indie:.4}, f:[.7,.25,.7,.75], streams:{}, age:90, lt:false, art:["#ff7b54","#7a2d16"], e:"📼"}
+  {"id":"b1", "sp":"5zOAudPQIs5U8zP6LQGHmH", "title":"MALAMENTE - Cap.1: Augurio", "artist":"ROSALÍA", "home":"barcelona", "g":{"flamenco":0.6, "pop":0.4}, "f":[0.65, 0.35, 0.75, 0.45], "streams":{"barcelona":248000}, "age":2920, "lt":false, "img":"https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02c46794640f6860a8c287f779"},
+  {"id":"b2", "sp":"1VB4sadHjFcFklHcZuoROi", "title":"Como Camarón", "artist":"Estopa", "home":"barcelona", "g":{"flamenco":0.6, "pop":0.4}, "f":[0.7, 0.55, 0.65, 0.75], "streams":{"barcelona":131000}, "age":9855, "lt":false, "img":"https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e021ed1c8aff132830890f91faa"},
+  {"id":"b3", "sp":"2DAE5Hto4cgoC8xX9I2QJU", "title":"Fiebre", "artist":"Bad Gyal", "home":"barcelona", "g":{"pop":0.6, "electronic":0.4}, "f":[0.6, 0.15, 0.85, 0.5], "streams":{"barcelona":162000}, "age":3650, "lt":false, "img":"https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02e105ae2f8cd47fa9909934f9"},
+  {"id":"b4", "sp":"3gQUxFnCnNSvcb8iJ2zicc", "title":"Teresa Rampell", "artist":"Manel", "home":"barcelona", "g":{"indie":1}, "f":[0.6, 0.4, 0.6, 0.7], "streams":{"barcelona":47000}, "age":4745, "lt":true, "img":"https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02c429af8a3166ebbd1d9d61cb"},
+  {"id":"b5", "sp":"6JkmK81cw854yC2YHz5iii", "title":"L'última ressaca", "artist":"Mishima", "home":"barcelona", "g":{"indie":0.9, "folk":0.1}, "f":[0.55, 0.45, 0.5, 0.45], "streams":{"barcelona":18000}, "age":5110, "lt":true, "img":"https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e0231d89093ab3e60e38c6a92dd"},
+  {"id":"b6", "sp":"6gmu5y1petI3ovZRpnqMZv", "title":"Destiny (feat. Pional)", "artist":"John Talabot", "home":"barcelona", "g":{"electronic":1}, "f":[0.65, 0.1, 0.75, 0.35], "streams":{"barcelona":12500}, "age":5110, "lt":true, "img":"https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02fc35362437ab0a2eded789f2"},
+  {"id":"g1", "sp":"7vS2QovIWNDTA3z6aBOOez", "title":"L'Empordà", "artist":"Sopa de Cabra", "home":"girona", "g":{"indie":0.7, "folk":0.3}, "f":[0.6, 0.4, 0.5, 0.6], "streams":{"girona":2100}, "age":13505, "lt":true, "img":"https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e025483a9d21027547d61de4b34"},
+  {"id":"n1", "sp":"0T9q1knAiHDPn2ARLrqRJi", "title":"Tennessee Whiskey", "artist":"Chris Stapleton", "home":"nashville", "g":{"country":0.6, "americana":0.4}, "f":[0.4, 0.6, 0.35, 0.4], "streams":{"nashville":198000}, "age":4015, "lt":false, "img":"https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e0285bdb09f395d298a77c2636b"},
+  {"id":"n2", "sp":"6Hiz5MDYoGdLBBQ3gGzRam", "title":"Last Night", "artist":"Morgan Wallen", "home":"nashville", "g":{"country":0.6, "pop":0.4}, "f":[0.65, 0.35, 0.55, 0.5], "streams":{"nashville":236000}, "age":1095, "lt":false, "img":"https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e0207e43c2a6f404e05848df296"},
+  {"id":"n3", "sp":"5qW6ZYct54PhKliCntyxRX", "title":"Cover Me Up", "artist":"Jason Isbell", "home":"nashville", "g":{"americana":0.7, "folk":0.3}, "f":[0.3, 0.8, 0.3, 0.35], "streams":{"nashville":64000}, "age":4745, "lt":false, "img":"https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02cadba04ee5fa8612182151c6"},
+  {"id":"n4", "sp":"2Lk8XTulavagQOrYqFpGB8", "title":"Dust in a Baggie", "artist":"Billy Strings", "home":"nashville", "g":{"bluegrass":1}, "f":[0.75, 0.9, 0.5, 0.6], "streams":{"nashville":21000}, "age":3650, "lt":true, "img":"https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e0288e576ba8eb066866bfacf39"},
+  {"id":"n5", "sp":"3QyKosGu3XAQ8zROO6FPqs", "title":"Crooked Tree", "artist":"Molly Tuttle & Golden Highway", "home":"nashville", "g":{"bluegrass":0.7, "folk":0.3}, "f":[0.6, 0.85, 0.45, 0.65], "streams":{"nashville":13500}, "age":1460, "lt":true, "img":"https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02e28feeaae59be1fdbc417424"},
+  {"id":"n6", "sp":"5cTjO1vlSiN9Xs6xDxWOrI", "title":"Hurtin' (On the Bottle)", "artist":"Margo Price", "home":"nashville", "g":{"country":0.6, "americana":0.4}, "f":[0.55, 0.6, 0.5, 0.45], "streams":{"nashville":9800}, "age":3650, "lt":true, "img":"https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02101b69d82b79a5413fb9f17e"},
+  {"id":"t1", "sp":"1Z1fN0KFNu0aG2EpbBVwvN", "title":"Plastic Love", "artist":"Mariya Takeuchi", "home":"tokyo", "g":{"citypop":1}, "f":[0.6, 0.3, 0.75, 0.6], "streams":{"tokyo":214000}, "age":15330, "lt":false, "img":"https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e0287828495cbe9ed95f3fee3f6"},
+  {"id":"t2", "sp":"78uCMwWi8ncCqvz9J4gHwr", "title":"Ride On Time", "artist":"Tatsuro Yamashita", "home":"tokyo", "g":{"citypop":0.8, "pop":0.2}, "f":[0.75, 0.3, 0.7, 0.8], "streams":{"tokyo":152000}, "age":16790, "lt":false, "img":"https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02210a5dac4d4e292f6474c25d"},
+  {"id":"t3", "sp":"5iF0Yf9gju6ERpAch08JsC", "title":"Hakujitsu", "artist":"King Gnu", "home":"tokyo", "g":{"jrock":0.8, "pop":0.2}, "f":[0.55, 0.35, 0.45, 0.35], "streams":{"tokyo":176000}, "age":2555, "lt":false, "img":"https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02e4da12ab8213633c552ecfa9"},
+  {"id":"t4", "sp":"0E5TZgeNbdxoR7YwZG9PTO", "title":"Polyrhythm", "artist":"Perfume", "home":"tokyo", "g":{"pop":0.6, "electronic":0.4}, "f":[0.85, 0.05, 0.8, 0.7], "streams":{"tokyo":98000}, "age":6935, "lt":false, "img":"https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e027aa30221d9dbc1271bae1b05"},
+  {"id":"t5", "sp":"0kdqcbwei4MDWFEX5f33yG", "title":"Bling-Bang-Bang-Born", "artist":"Creepy Nuts", "home":"tokyo", "g":{"hiphop":1}, "f":[0.85, 0.1, 0.85, 0.7], "streams":{"tokyo":231000}, "age":730, "lt":false, "img":"https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02c0d48f302d8baffa763cc9cb"},
+  {"id":"t6", "sp":"1zpBcP8lqsgLRvUysO7blx", "title":"Mayonaka no Door / Stay With Me", "artist":"Miki Matsubara", "home":"tokyo", "g":{"citypop":1}, "f":[0.6, 0.3, 0.65, 0.55], "streams":{"tokyo":24000}, "age":17155, "lt":true, "img":"https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e023805bc36e0aa8b67ed177744"},
+  {"id":"t7", "sp":"2uXlHiOE4o5xHOCiob8DKn", "title":"Fly-day Chinatown", "artist":"Yasuha", "home":"tokyo", "g":{"citypop":0.8, "pop":0.2}, "f":[0.7, 0.25, 0.75, 0.75], "streams":{"tokyo":11000}, "age":16425, "lt":true, "img":"https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e0268a5d2cd77f7abef0b964981"},
+  {"id":"l1", "sp":"2PDgArI0p7UkeYgXWuqpmh", "title":"Last Last", "artist":"Burna Boy", "home":"lagos", "g":{"afrobeats":1}, "f":[0.6, 0.25, 0.75, 0.5], "streams":{"lagos":241000}, "age":1460, "lt":false, "img":"https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02f033826fb41663e2a16c05a3"},
+  {"id":"l2", "sp":"5FG7Tl93LdH117jEKYl3Cm", "title":"Essence (feat. Tems)", "artist":"Wizkid", "home":"lagos", "g":{"afrobeats":0.6, "rnb":0.4}, "f":[0.5, 0.3, 0.8, 0.55], "streams":{"lagos":188000}, "age":2190, "lt":false, "img":"https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02b5b1023769a6bf19b14d66ab"},
+  {"id":"l3", "sp":"0WtM2NBVQNNJLh6scP13H8", "title":"Calm Down (with Selena Gomez)", "artist":"Rema", "home":"lagos", "g":{"afrobeats":0.7, "pop":0.3}, "f":[0.6, 0.3, 0.8, 0.8], "streams":{"lagos":205000}, "age":1460, "lt":false, "img":"https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02a3a7f38ea2033aa501afd4cf"},
+  {"id":"l4", "sp":"57iKWZfYSaTDqH4oCIL2v7", "title":"Lonely At The Top", "artist":"Asake", "home":"lagos", "g":{"amapiano":0.6, "afrobeats":0.4}, "f":[0.7, 0.2, 0.85, 0.65], "streams":{"lagos":163000}, "age":1095, "lt":false, "img":"https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02860130794511a4966bfb4262"},
+  {"id":"l5", "sp":"2mzM4Y0Rnx2BDZqRnhQ5Q6", "title":"Free Mind", "artist":"Tems", "home":"lagos", "g":{"rnb":0.7, "afrobeats":0.3}, "f":[0.4, 0.4, 0.6, 0.35], "streams":{"lagos":72000}, "age":2190, "lt":false, "img":"https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e020ab4d3e1c0b5c5e453287a4c"},
+  {"id":"l6", "sp":"3QHyjoOeIsJKgWs2qmPzJC", "title":"Alte Cruise", "artist":"Odunsi (The Engine)", "home":"lagos", "g":{"afrobeats":0.5, "rnb":0.5}, "f":[0.5, 0.3, 0.7, 0.6], "streams":{"lagos":14000}, "age":2920, "lt":true, "img":"https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02a61959b0f27da9375bf3c7b2"},
+  {"id":"l7", "sp":"5j6dGDbLUnPE5UbPOtpJAX", "title":"Cash", "artist":"Lady Donli", "home":"lagos", "g":{"rnb":0.5, "afrobeats":0.5}, "f":[0.55, 0.3, 0.7, 0.6], "streams":{"lagos":9500}, "age":2555, "lt":true, "img":"https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02c02bb68914b020297aef8b86"},
+  {"id":"x1", "sp":"5FVd6KXrgO9B3JPmC8OPst", "title":"Do I Wanna Know?", "artist":"Arctic Monkeys", "home":null, "g":{"indie":1}, "f":[0.55, 0.2, 0.55, 0.4], "streams":{}, "age":4745, "lt":false, "img":"https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e024ae1c4c5c45aabe565499163"},
+  {"id":"x2", "sp":"0Ftrkz2waaHcjKb4qYvLmz", "title":"Delilah (pull me out of this)", "artist":"Fred again..", "home":null, "g":{"electronic":1}, "f":[0.75, 0.15, 0.7, 0.4], "streams":{}, "age":1460, "lt":false, "img":"https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02c652ae235973f4731ec6ac50"},
+  {"id":"x3", "sp":"41z2bSbbtJ9wiIee4RXdi5", "title":"Levitating", "artist":"Dua Lipa", "home":null, "g":{"pop":1}, "f":[0.8, 0.05, 0.85, 0.9], "streams":{}, "age":2190, "lt":false, "img":"https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02d85ec490b441a6444a736cc3"},
+  {"id":"x4", "sp":"2lRKZDA4XWyDviGGiWHA1Y", "title":"Something in the Orange", "artist":"Zach Bryan", "home":null, "g":{"country":0.5, "folk":0.5}, "f":[0.35, 0.8, 0.35, 0.3], "streams":{}, "age":1460, "lt":false, "img":"https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e022cf9bff9100710b639687c83"},
+  {"id":"x5", "sp":"7IxVWmdabNVhfLBV3JD0nJ", "title":"The Cave", "artist":"Mumford & Sons", "home":null, "g":{"folk":0.6, "bluegrass":0.4}, "f":[0.7, 0.75, 0.45, 0.55], "streams":{}, "age":6205, "lt":false, "img":"https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e026d0a13a643d83342430c07da"},
+  {"id":"x6", "sp":"31c9IHwCIONmUYW0jL7Riz", "title":"HUMBLE.", "artist":"Kendrick Lamar", "home":null, "g":{"hiphop":1}, "f":[0.65, 0, 0.9, 0.4], "streams":{}, "age":3285, "lt":false, "img":"https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02429ad98cfac54f942f299376"},
+  {"id":"x7", "sp":"5lGjjLMuoo9kqnz9DEa3BK", "title":"Did You See", "artist":"J Hus", "home":null, "g":{"afrobeats":0.6, "hiphop":0.4}, "f":[0.6, 0.15, 0.85, 0.75], "streams":{}, "age":3285, "lt":false, "img":"https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e027d2a542134c27f33d91adb0a"},
+  {"id":"x8", "sp":"4iZ4pt7kvcaH6Yo8UoZ4s2", "title":"Snooze", "artist":"SZA", "home":null, "g":{"rnb":1}, "f":[0.45, 0.15, 0.6, 0.4], "streams":{}, "age":1460, "lt":false, "img":"https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02bc18bdade69ec5ef0bb25b17"},
 ];
 const T = Object.fromEntries(TRACKS.map(t => [t.id, t]));
 
 const COLD_START_MIN_USERS = 25000;
 const CITIES = {
   barcelona:{name:"Barcelona", region:"catalonia", users:420000, mix:"Barcelona, Right Now", mixArt:["#c724b1","#3d1e6d"], mixE:"🌊",
-    events:[{name:"Flamenco Tablao", area:"El Raval", km:1.2, time:"9:30 PM", artist:"Flama Roja"},
-            {name:"Late electronic set", area:"Poble Sec", km:2.4, time:"11 PM", artist:"Nit Elèctrica"}]},
+    events:[{name:"Flamenco tablao night", area:"El Raval", km:1.2, time:"9:30 PM", genre:"flamenco"},
+            {name:"Late electronic set", area:"Poble Sec", km:2.4, time:"11 PM", genre:"electronic"}]},
   girona:{name:"Girona", region:"catalonia", users:9000, mix:"Girona, Right Now", mixArt:["#5f7f3a","#1f2b10"], mixE:"🏰",
-    events:[{name:"Acoustic night", area:"Barri Vell", km:0.8, time:"8 PM", artist:"Ter Sound"}]},
+    events:[{name:"Catalan rock in the square", area:"Barri Vell", km:0.8, time:"8 PM", genre:"indie"}]},
   nashville:{name:"Nashville", region:"tennessee", users:310000, mix:"Nashville, Right Now", mixArt:["#c98a3c","#5e2f0f"], mixE:"🎻",
-    events:[{name:"Honky-tonk night", area:"Broadway", km:0.6, time:"8 PM", artist:"Brody Lane"},
-            {name:"Writers' round", area:"East Nashville", km:3.1, time:"7:30 PM", artist:"June Calloway"}]},
+    events:[{name:"Honky-tonk night", area:"Broadway", km:0.6, time:"8 PM", genre:"country"},
+            {name:"Bluegrass jam", area:"East Nashville", km:3.1, time:"7:30 PM", genre:"bluegrass"}]},
   tokyo:{name:"Tokyo", region:"kanto", users:1900000, mix:"Tokyo, Right Now", mixArt:["#3a7bd5","#ff8fb1"], mixE:"🗼",
-    events:[{name:"City-pop revival night", area:"Shimokitazawa", km:4.0, time:"7 PM", artist:"Yoru no Kaze"},
-            {name:"Open-mic cypher", area:"Shibuya", km:1.5, time:"10 PM", artist:"MC Tsuki"}]},
+    events:[{name:"City-pop vinyl night", area:"Shimokitazawa", km:4.0, time:"7 PM", genre:"citypop"},
+            {name:"Open-mic cypher", area:"Shibuya", km:1.5, time:"10 PM", genre:"hiphop"}]},
   lagos:{name:"Lagos", region:"lagos-state", users:880000, mix:"Lagos, Right Now", mixArt:["#f2b134","#2fa36b"], mixE:"🌍",
-    events:[{name:"Amapiano Sundowner", area:"Lekki", km:5.2, time:"6 PM", artist:"Kemi & DJ Sola"},
-            {name:"Live band night", area:"Yaba", km:2.2, time:"9 PM", artist:"Ayo Lagos"}]}
+    events:[{name:"Amapiano sundowner", area:"Lekki", km:5.2, time:"6 PM", genre:"amapiano"},
+            {name:"Alté live band night", area:"Yaba", km:2.2, time:"9 PM", genre:"rnb"}]}
 };
 const REGIONS = { catalonia:"Catalonia", tennessee:"Tennessee", kanto:"Kantō", "lagos-state":"Lagos State" };
 
 const LISTENERS = {
-  maya:{name:"Maya", hint:"Visiting from London. Indie and electronic, some pop.",
-    g:{indie:.35, electronic:.35, pop:.15, rnb:.1, folk:.05}, f:[.7,.3,.7,.5], played:["Glass Harbour","Kilowatt","The Lumens"]},
-  sam:{name:"Sam", hint:"From Austin. Country, Americana and acoustic folk.",
-    g:{country:.4, americana:.25, folk:.2, bluegrass:.1, pop:.05}, f:[.5,.8,.35,.6], played:["Wade Miller","Appalachia Kids","Brody Lane"]},
-  priya:{name:"Priya", hint:"From Mumbai. Hip-hop, Afrobeats and R&B.",
-    g:{hiphop:.35, afrobeats:.3, rnb:.2, amapiano:.1, pop:.05}, f:[.75,.15,.85,.65], played:["Kojo Kay","Dre Atlas","Nia Rose","Tobi Ade"]}
+  maya:{name:"Maya", hint:"Visiting from London. Indie and electronic, some pop. Plays Arctic Monkeys, Fred again.., Dua Lipa.",
+    g:{indie:.35, electronic:.35, pop:.15, rnb:.1, folk:.05}, f:[.7,.3,.7,.5], played:["Arctic Monkeys","Fred again..","Dua Lipa"]},
+  sam:{name:"Sam", hint:"From Austin. Country, Americana and acoustic folk. Plays Zach Bryan, Mumford & Sons, Morgan Wallen.",
+    g:{country:.4, americana:.25, folk:.2, bluegrass:.1, pop:.05}, f:[.5,.8,.35,.6], played:["Zach Bryan","Mumford & Sons","Morgan Wallen"]},
+  priya:{name:"Priya", hint:"From Mumbai. Hip-hop, Afrobeats and R&B. Plays Kendrick Lamar, J Hus, SZA, Burna Boy.",
+    g:{hiphop:.35, afrobeats:.3, rnb:.2, amapiano:.1, pop:.05}, f:[.75,.15,.85,.65], played:["Kendrick Lamar","J Hus","SZA","Burna Boy"]}
 };
 
 const SIGNALS = [
@@ -489,7 +490,9 @@ function effectiveWeights(w, ramp){
   return Object.fromEntries(Object.entries(raw).map(([k, v]) => [k, v / sum]));
 }
 
-function components(t, listener, index, tonightArtists){
+const primaryGenre = t => Object.entries(t.g).sort((a, b) => b[1] - a[1])[0][0];
+
+function components(t, listener, index, tonightGenres){
   const maxG = Math.max(...Object.values(listener.g));
   const genreMatch = Object.entries(t.g).reduce((s, [g, v]) => s + v * (listener.g[g] || 0), 0) / maxG;
   const played = listener.played.includes(t.artist) ? 1 : 0;
@@ -497,13 +500,13 @@ function components(t, listener, index, tonightArtists){
   const local = index.streams[t.id] ? Math.log1p(index.streams[t.id]) / Math.log1p(index.max) : 0;
   const dist = Math.sqrt(t.f.reduce((s, v, i) => s + (v - listener.f[i]) ** 2, 0));
   const sim = clamp01(1 - dist / 1.2);
-  const fresh = clamp01(0.6 * Math.exp(-t.age / 90) + 0.4 * (tonightArtists.has(t.artist) ? 1 : 0));
+  const fresh = clamp01(0.6 * Math.exp(-t.age / 90) + 0.4 * (tonightGenres.has(primaryGenre(t)) ? 1 : 0));
   return {personal, local, sim, fresh};
 }
 
-function scoreAll(weights, index, listener, tonightArtists, cands){
+function scoreAll(weights, index, listener, tonightGenres, cands){
   return cands.map(t => {
-    const c = components(t, listener, index, tonightArtists);
+    const c = components(t, listener, index, tonightGenres);
     const contrib = Object.fromEntries(SIGNALS.map(s => [s.key, c[s.key] * weights[s.key]]));
     const total = Object.values(contrib).reduce((a, b) => a + b, 0);
     return {t, c, contrib, total, isLocal: !!index.streams[t.id], flags:[]};
@@ -568,7 +571,7 @@ function run(){
   const ramp = localRamp();
   const nearbyOn = state.privacy !== "never";
   const index = localIndex(state.city, state.rules.coldStart);
-  const tonight = new Set(nearbyOn ? city.events.map(e => e.artist) : []);
+  const tonight = new Set(nearbyOn ? city.events.map(e => e.genre) : []);
   const weights = nearbyOn ? effectiveWeights(state.w, ramp) : TASTE_ONLY;
 
   // baseline = today's taste-only recommendations: whole catalogue, no local signal,
@@ -605,9 +608,9 @@ function segButtons(el, items, current, onPick){
 }
 
 function renderControls(r){
-  segButtons($("listener"), Object.entries(LISTENERS).map(([k, l]) => [k, l.name]), state.listener, v => { state.listener = v; state.playing = null; NearbySynth.stop(); update(); });
+  segButtons($("listener"), Object.entries(LISTENERS).map(([k, l]) => [k, l.name]), state.listener, v => { state.listener = v; state.playing = null; pausePlayer(); update(); });
   $("listener-hint").textContent = LISTENERS[state.listener].hint;
-  segButtons($("city"), Object.entries(CITIES).map(([k, c]) => [k, c.users < COLD_START_MIN_USERS ? `${c.name} <small>· small city</small>` : c.name]), state.city, v => { state.city = v; state.playing = null; NearbySynth.stop(); update(); });
+  segButtons($("city"), Object.entries(CITIES).map(([k, c]) => [k, c.users < COLD_START_MIN_USERS ? `${c.name} <small>· small city</small>` : c.name]), state.city, v => { state.city = v; state.playing = null; pausePlayer(); update(); });
   const c = CITIES[state.city];
   $("city-hint").textContent = `~${c.users.toLocaleString()} active Spotify users here${c.users < COLD_START_MIN_USERS ? `, too few for a reliable city-level signal (cold-start case).` : "."}`;
   segButtons($("mode"), [["auto","Not set"],["traveling","Traveling"],["local","Local"]], state.mode, v => { state.mode = v; update(); });
@@ -632,9 +635,9 @@ function renderControls(r){
 }
 
 function trackRow(r){
-  const tag = r.isLocal ? (r.t.lt ? `<span class="chip lt">Local · small act</span>` : `<span class="chip local">Local</span>`) : `<span class="chip taste">Your taste</span>`;
-  return `<li><button type="button" class="trk${NearbySynth.playing() === r.t.id ? " is-playing" : ""}" data-play="${r.t.id}" aria-label="Play ${esc(r.t.title)} by ${esc(r.t.artist)}">
-    <span class="trk-art" style="background:${grad(r.t.art)}">${r.t.e}</span>
+  const tag = r.isLocal ? (r.t.lt ? `<span class="chip lt">Local · deep cut</span>` : `<span class="chip local">Local</span>`) : `<span class="chip taste">Your taste</span>`;
+  return `<li><button type="button" class="trk${player.id === r.t.id && !player.paused ? " is-playing" : ""}" data-play="${r.t.id}" aria-label="Play ${esc(r.t.title)} by ${esc(r.t.artist)}">
+    <span class="trk-art"><img src="${r.t.img}" alt="" loading="lazy" /></span>
     <span class="trk-text"><span class="trk-title" style="display:block">${esc(r.t.title)}</span>
     <span class="trk-meta" style="display:block">${tag}${esc(r.t.artist)}</span></span></button></li>`;
 }
@@ -653,26 +656,17 @@ function renderPhone(r){
       <div class="nb-top"><span class="nb-back">‹</span><span class="nb-pin"><span class="pulse"></span>${esc(r.city.name)}</span></div>
       ${r.index.useRegion ? `<div class="nb-sub warn">Not enough local listening yet. Showing what's trending across ${esc(REGIONS[r.city.region])}.</div>` : `<div class="nb-sub">${state.mode === "local" ? "Local mode: what's new around you" : "What the city's playing, matched to you"}</div>`}
       <div class="shelf-title">${esc(r.index.label)}</div>
-      <div class="hscroll">${shelf.map(t => `<button type="button" class="tile" data-play="${t.id}"><span class="art" style="background:${grad(t.art)}">${t.e}</span><span class="tile-label" style="display:block">${esc(t.title)}</span><span class="tile-sub" style="display:block">${esc(t.artist)} · ${fmtK(r.index.streams[t.id])} plays</span></button>`).join("")}</div>
+      <div class="hscroll">${shelf.map(t => `<button type="button" class="tile" data-play="${t.id}"><span class="art"><img src="${t.img}" alt="" loading="lazy" /></span><span class="tile-label" style="display:block">${esc(t.title)}</span><span class="tile-sub" style="display:block">${esc(t.artist)} · ${fmtK(r.index.streams[t.id])} plays</span></button>`).join("")}</div>
       <div class="shelf-title">Your local mix</div>
       <div class="mix-card"><span class="mix-art" style="background:${grad(r.city.mixArt)}">${r.city.mixE}</span>
         <div><div class="mix-title">${esc(r.city.mix)}</div><div class="mix-sub">${esc(r.listener.name)}'s taste + what ${r.index.useRegion ? esc(REGIONS[r.city.region]) : "the city"}'s playing · Week ${state.week}</div></div></div>
       <ol class="tracks">${r.mix.map(trackRow).join("")}</ol>
       <div class="shelf-title">Playing tonight</div>
-      ${r.city.events.map(e => `<div class="event"><div><div class="event-name">${esc(e.name)} · ${esc(e.artist)}</div><div class="event-meta">${esc(e.area)}${precise ? ` · ${e.km} km away` : ""}</div></div><div class="event-time">${e.time}</div></div>`).join("")}
+      ${r.city.events.map(e => `<div class="event"><div><div class="event-name">${esc(e.name)}</div><div class="event-meta">${esc(e.area)}${precise ? ` · ${e.km} km away` : ""}</div></div><div class="event-time">${e.time}</div></div>`).join("")}
       ${state.privacy === "always" ? `<div class="bg-note">↻ Refreshed in the background 12 min ago</div>` : `<div class="bg-note"></div>`}`;
   }
-  // now playing
-  const playing = T[state.playing] || (r.mix[0] && r.mix[0].t);
-  if (playing){
-    const on = NearbySynth.playing() === playing.id;
-    $("np").innerHTML = `<div class="np-progress" id="np-progress"></div><div class="np-art" style="background:${grad(playing.art)}">${playing.e}</div>
-      <div class="np-text"><div class="np-title">${esc(playing.title)} — ${esc(playing.artist)}</div><div class="np-artist">${r.nearbyOn ? `From Nearby: ${esc(r.city.name)}` : "From Made for you"}</div></div>
-      ${on ? `<div class="eq"><span></span><span></span><span></span></div>` : ""}
-      <button type="button" class="np-btn" data-toggle-play="${playing.id}" aria-label="${on ? "Pause" : "Play"} ${esc(playing.title)}">${on
-        ? '<svg viewBox="0 0 12 12" fill="currentColor"><rect x="2" y="1.5" width="3" height="9" rx=".6"/><rect x="7" y="1.5" width="3" height="9" rx=".6"/></svg>'
-        : '<svg viewBox="0 0 12 12" fill="currentColor"><path d="M3 1.6v8.8L10.4 6z"/></svg>'}</button>`;
-  }
+  // the Spotify player loads the top track of the mix until the visitor picks one
+  if (!state.playing && r.mix[0]) loadTrack(r.mix[0].t.id, false);
 }
 
 function renderResults(r){
@@ -694,7 +688,7 @@ function renderResults(r){
   $("breakdown").innerHTML = r.mix.map((x, i) => `
     <div class="row">
       <span class="rank">${i + 1}</span>
-      <span class="who"><span class="t" style="display:block">${esc(x.t.title)}</span><span class="a" style="display:block">${esc(x.t.artist)} · ${x.isLocal ? (x.t.lt ? "local, small act" : "local") : "your taste"}${x.rotated ? " · rotated" : ""}</span>
+      <span class="who"><span class="t" style="display:block">${esc(x.t.title)}</span><span class="a" style="display:block">${esc(x.t.artist)} · ${x.isLocal ? (x.t.lt ? "local, deep cut" : "local") : "your taste"}${x.rotated ? " · rotated" : ""}</span>
         ${x.flags.map(f => `<span class="flag">${esc(f)}</span>`).join("")}</span>
       <span class="stack" role="img" aria-label="${SIGNALS.map(s => `${s.label} ${x.contrib[s.key].toFixed(2)}`).join(", ")}">${SIGNALS.map(s => `<span style="width:${(x.contrib[s.key] / top * 100).toFixed(1)}%;background:${s.color}" title="${s.label}: ${x.c[s.key].toFixed(2)} × weight = ${x.contrib[s.key].toFixed(3)}"></span>`).join("")}</span>
       <span class="total">${x.total.toFixed(2)}</span>
@@ -708,7 +702,7 @@ function renderResults(r){
     ${w.personal.toFixed(2)} × personal   genre-history match + already-played artist
   + ${w.local.toFixed(2)} × local      log(7-day streams in ${r.index.useRegion ? REGIONS[r.city.region] : r.city.name}) / log(max)
   + ${w.sim.toFixed(2)} × similarity  1 − distance(energy, acoustic, dance, mood)
-  + ${w.fresh.toFixed(2)} × fresh      recency decay + "playing tonight" boost
+  + ${w.fresh.toFixed(2)} × fresh      recency decay + boost if a nearby night tonight matches its genre
 
 then, in order:
   rotation    ${state.rules.rotation ? `last week's tracks (except top ${ROTATION_ANCHORS}) × ${ROTATION_PENALTY}` : "off"}
@@ -750,16 +744,41 @@ for (const [k] of RULES) $(`r-${k}`).addEventListener("change", e => { state.rul
 
 $("hours").addEventListener("input", e => { state.hours = Number(e.target.value); update(); });
 $("week").addEventListener("change", e => { state.week = Number(e.target.value); update(); });
-// playback: tap a track (or the mini-player button) to play / pause its sketch
+// playback: real tracks through Spotify's embedded player (iFrame API).
+// Logged-out visitors hear a preview; logged-in Spotify users get the full track.
+const player = { ctrl: null, id: null, paused: true, pending: null };
+function loadTrack(id, autoplay){
+  if (player.id === id && !autoplay) return;
+  player.id = id;
+  if (!player.ctrl) { player.pending = { id, autoplay }; renderPlayerFallback(); return; }
+  player.ctrl.loadUri("spotify:track:" + T[id].sp);
+  if (autoplay) player.ctrl.play();
+}
+function renderPlayerFallback(){
+  const t = T[player.id];
+  if (t && !player.ctrl) $("np").innerHTML = `<a class="np-link" href="https://open.spotify.com/track/${t.sp}" target="_blank" rel="noopener"><img src="${t.img}" alt="" /><span><b>${esc(t.title)}</b><small>${esc(t.artist)} · Play on Spotify ↗</small></span></a>`;
+}
 function togglePlay(id){
-  if (NearbySynth.playing() === id) NearbySynth.stop();
-  else NearbySynth.play(T[id], () => update());
+  if (player.ctrl && player.id === id) player.ctrl.togglePlay();
+  else loadTrack(id, true);
   state.playing = id;
   update();
 }
+function pausePlayer(){ if (player.ctrl && !player.paused) player.ctrl.pause(); }
+window.onSpotifyIframeApiReady = function (IFrameAPI) {
+  const first = player.pending || { id: player.id || TRACKS[0].id, autoplay: false };
+  const mount = document.createElement("div");
+  $("np").replaceChildren(mount);
+  IFrameAPI.createController(mount, { uri: "spotify:track:" + T[first.id].sp, width: "100%", height: 80 }, function (ctrl) {
+    player.ctrl = ctrl;
+    ctrl.addListener("playback_update", function (e) {
+      const paused = !!e.data.isPaused;
+      if (paused !== player.paused) { player.paused = paused; update(); }
+    });
+    if (first.autoplay) ctrl.play();
+  });
+};
 $("screen").addEventListener("click", e => { const b = e.target.closest("[data-play]"); if (b) togglePlay(b.dataset.play); });
-$("np").addEventListener("click", e => { const b = e.target.closest("[data-toggle-play]"); if (b) togglePlay(b.dataset.togglePlay); });
-(function tick(){ const bar = $("np-progress"); if (bar) bar.style.width = (NearbySynth.progress() * 100).toFixed(1) + "%"; requestAnimationFrame(tick); })();
 
 // theme toggle (same behaviour as the rest of the portfolio)
 (function(){
