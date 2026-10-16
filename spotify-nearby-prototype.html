@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Spotify Nearby — Live Prototype</title>
+<meta name="description" content="A live prototype of the Spotify Nearby concept: tune the taste × local-context blend and watch the recommendations re-rank live." />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Spotify Nearby — Live Prototype" />
+<meta property="og:description" content="Tune the taste × local-context blend and watch a Spotify-style Nearby screen re-rank live." />
+<meta property="og:url" content="https://knightmare-26.github.io/product-portfolio/spotify-nearby-prototype.html" />
+<meta property="og:image" content="https://knightmare-26.github.io/product-portfolio/assets/og.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='16' fill='%231DB954'/%3E%3C/svg%3E" />
+<style>
+  :root{
+    --bg:#060606; --panel:#101010; --spotify-black:#121212; --card:#181818; --card-hover:#282828;
+    --line:#242424; --green:#1DB954; --text:#fff; --dim:#B3B3B3; --dim2:#727272;
+    --c-personal:#1DB954; --c-local:#4aa8ff; --c-sim:#c77dff; --c-fresh:#ffb347;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; color:var(--text); background:
+      radial-gradient(700px 500px at 10% -6%, rgba(29,185,84,.13), transparent 60%),
+      radial-gradient(800px 560px at 90% 6%, rgba(199,36,177,.09), transparent 60%), var(--bg);
+    background-attachment:fixed;
+    font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Helvetica,Arial,sans-serif;
+    line-height:1.45; overflow-x:hidden;
+  }
+  a{color:var(--green)}
+  .page{max-width:1160px; margin:0 auto; padding:36px 20px 72px}
+  .back{font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); text-decoration:none}
+  .back:hover{color:#fff}
+  .eyebrow{color:var(--green); font-size:12px; letter-spacing:.16em; text-transform:uppercase; font-weight:700; margin:22px 0 10px}
+  h1{font-size:clamp(26px,4vw,38px); margin:0 0 10px; letter-spacing:-.02em}
+  .intro{color:var(--dim); max-width:72ch; margin:0 0 28px; font-size:15px}
+  .intro b{color:#fff}
+
+  /* ---------- layout ---------- */
+  .stage{display:grid; grid-template-columns:minmax(0,1fr) 400px; gap:28px; align-items:start}
+  @media (max-width:980px){ .stage{grid-template-columns:1fr} .phone-col{order:-1} }
+  .phone-col{position:sticky; top:20px}
+  @media (max-width:980px){ .phone-col{position:static} }
+
+  /* ---------- controls ---------- */
+  .panel{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px 18px 6px}
+  .panel + .panel{margin-top:16px}
+  .panel h2{font-size:13px; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); margin:0 0 14px; font-weight:700}
+  .field{margin-bottom:16px}
+  .field > label, .field > .lbl{display:block; font-size:13px; font-weight:700; margin-bottom:7px}
+  .hint{font-size:12px; color:var(--dim2); margin-top:5px}
+  .seg{display:flex; flex-wrap:wrap; gap:6px}
+  .seg button{
+    font:inherit; font-size:12.5px; font-weight:600; color:#fff; background:var(--card);
+    border:1px solid #2c2c2c; border-radius:999px; padding:7px 13px; cursor:pointer;
+  }
+  .seg button:hover{background:var(--card-hover)}
+  .seg button[aria-pressed="true"]{background:#fff; color:#000; border-color:#fff}
+  .seg button small{font-weight:500; opacity:.7}
+  .slider{display:grid; grid-template-columns:118px minmax(0,1fr) 46px; gap:10px; align-items:center; margin-bottom:10px}
+  .slider label{font-size:13px; font-weight:600; display:flex; align-items:center; gap:7px}
+  .dot{width:10px; height:10px; border-radius:3px; flex-shrink:0}
+  .slider output{font-variant-numeric:tabular-nums; font-size:13px; text-align:right; color:var(--dim)}
+  input[type=range]{width:100%; accent-color:var(--green)}
+  .presets{display:flex; flex-wrap:wrap; gap:6px; margin:4px 0 14px}
+  .presets button{font:inherit; font-size:12px; color:var(--dim); background:transparent; border:1px dashed #3a3a3a; border-radius:8px; padding:5px 10px; cursor:pointer}
+  .presets button:hover{color:#fff; border-color:#666}
+  .weightbar{display:flex; height:8px; border-radius:4px; overflow:hidden; margin:2px 0 6px; background:var(--card)}
+  .weightbar span{display:block; height:100%; transition:width .25s ease}
+  .toggles{display:grid; gap:10px}
+  .toggle{display:flex; gap:10px; align-items:flex-start; font-size:13px; cursor:pointer}
+  .toggle input{accent-color:var(--green); width:16px; height:16px; margin-top:2px; flex-shrink:0}
+  .toggle b{display:block}
+  .toggle span span{color:var(--dim2); font-size:12px}
+  select{font:inherit; font-size:13px; color:#fff; background:var(--card); border:1px solid #2c2c2c; border-radius:8px; padding:7px 10px}
+
+  /* ---------- phone ---------- */
+  .phone{background:#000; border:1px solid #2a2a2a; border-radius:38px; padding:12px; box-shadow:0 30px 70px -22px rgba(0,0,0,.8); position:relative}
+  .notch{position:absolute; top:12px; left:50%; transform:translateX(-50%); width:90px; height:22px; background:#000; border-radius:14px; z-index:5}
+  .screen{background:var(--spotify-black); border-radius:28px; overflow:hidden; height:760px; display:flex; flex-direction:column}
+  @media (max-width:440px){ .screen{height:700px} }
+  .status{display:flex; justify-content:space-between; font-size:11px; color:#e8e8e8; padding:10px 18px 0}
+  .scroll{flex:1; overflow-y:auto; scrollbar-width:none}
+  .scroll::-webkit-scrollbar{display:none}
+  .nb-top{display:flex; align-items:center; gap:10px; padding:14px 16px 2px}
+  .nb-back{font-size:20px}
+  .nb-pin{display:flex; align-items:center; gap:8px; font-weight:800; font-size:18px}
+  .pulse{width:8px; height:8px; border-radius:50%; background:var(--green); box-shadow:0 0 0 0 rgba(29,185,84,.6); animation:ping 1.6s infinite}
+  @keyframes ping{100%{box-shadow:0 0 0 9px rgba(29,185,84,0)}}
+  .nb-sub{font-size:11.5px; color:var(--dim); padding:0 16px 4px 34px}
+  .nb-sub.warn{color:#ffb347}
+  .shelf-title{font-size:15px; font-weight:800; padding:14px 16px 10px}
+  .hscroll{display:flex; gap:12px; overflow-x:auto; padding:0 16px 6px; scrollbar-width:none}
+  .hscroll::-webkit-scrollbar{display:none}
+  .tile{flex:0 0 104px; cursor:pointer; background:none; border:0; padding:0; color:inherit; text-align:left; font:inherit}
+  .art{width:104px; height:104px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:26px; margin-bottom:7px}
+  .tile-label{font-size:12.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .tile-sub{font-size:11px; color:var(--dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .mix-card{margin:2px 16px 6px; background:linear-gradient(135deg,#232323,#141414); border-radius:8px; padding:12px; display:flex; gap:12px; align-items:center}
+  .mix-art{width:52px; height:52px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0}
+  .mix-title{font-weight:800; font-size:14px}
+  .mix-sub{font-size:11px; color:var(--dim)}
+  .tracks{list-style:none; margin:0; padding:0 8px}
+  .trk{display:flex; align-items:center; gap:10px; padding:6px 8px; border-radius:6px; cursor:pointer; width:100%; background:none; border:0; color:inherit; font:inherit; text-align:left}
+  .trk:hover{background:#1c1c1c}
+  .trk.is-playing .trk-title{color:var(--green)}
+  .trk-art{width:40px; height:40px; border-radius:3px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0}
+  .trk-text{flex:1; min-width:0}
+  .trk-title{font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .trk-meta{font-size:11px; color:var(--dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .chip{display:inline-block; font-size:9px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; padding:1px 5px; border-radius:4px; margin-right:5px; vertical-align:1px}
+  .chip.local{background:rgba(74,168,255,.16); color:#8cc8ff}
+  .chip.taste{background:rgba(29,185,84,.15); color:#5be08c}
+  .chip.lt{background:rgba(255,179,71,.15); color:#ffc878}
+  .event{margin:0 16px 8px; background:var(--card); border-radius:6px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center; gap:10px}
+  .event-name{font-size:12.5px; font-weight:700}
+  .event-meta{font-size:10.5px; color:var(--dim); margin-top:2px}
+  .event-time{font-size:10.5px; background:rgba(29,185,84,.15); color:var(--green); padding:4px 9px; border-radius:20px; font-weight:800; white-space:nowrap}
+  .bg-note{font-size:10.5px; color:var(--dim2); padding:2px 16px 12px}
+  .off{padding:60px 26px; text-align:center}
+  .off .big{font-size:40px; margin-bottom:10px}
+  .off h3{margin:0 0 8px; font-size:18px}
+  .off p{color:var(--dim); font-size:13px; margin:0 0 18px}
+  .off button{font:inherit; font-weight:700; font-size:13px; background:#fff; color:#000; border:0; border-radius:999px; padding:10px 18px; cursor:pointer}
+  .nowplaying{margin:6px 10px 8px; background:var(--card-hover); border-radius:6px; padding:8px 10px; display:flex; align-items:center; gap:10px; position:relative; overflow:hidden}
+  .np-progress{position:absolute; left:0; bottom:0; height:2px; background:var(--green); width:0; animation:prog 30s linear forwards}
+  @keyframes prog{to{width:100%}}
+  .np-art{width:34px; height:34px; border-radius:3px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:14px}
+  .np-text{flex:1; min-width:0}
+  .np-title{font-size:12px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .np-artist{font-size:10.5px; color:var(--dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .eq{display:flex; align-items:flex-end; gap:2.5px; height:14px}
+  .eq span{width:3px; height:14px; background:var(--green); border-radius:1px; animation:eq .9s ease-in-out infinite}
+  .eq span:nth-child(2){animation-delay:.2s} .eq span:nth-child(3){animation-delay:.4s}
+  @keyframes eq{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1)}}
+  .tabbar{display:flex; justify-content:space-around; padding:8px 0 14px; border-top:1px solid #1c1c1c}
+  .tab{display:flex; flex-direction:column; align-items:center; gap:3px; font-size:9.5px; color:var(--dim2)}
+  .tab.active{color:#fff}
+  .tab-icon{font-size:17px}
+  .phone-cap{text-align:center; font-size:12px; color:var(--dim2); margin-top:10px}
+
+  /* ---------- results ---------- */
+  .results{margin-top:28px}
+  .metrics{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:12px; overflow:hidden}
+  .metric{background:var(--panel); padding:16px}
+  .metric b{display:block; font-size:28px; letter-spacing:-.02em; font-variant-numeric:tabular-nums}
+  .metric span{font-size:12px; color:var(--dim)}
+  .metric.star b{color:var(--green)}
+  .bd{margin-top:16px; background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px}
+  .bd h2{font-size:13px; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); margin:0 0 4px}
+  .bd .hint{margin:0 0 14px}
+  .legend{display:flex; flex-wrap:wrap; gap:14px; font-size:12px; color:var(--dim); margin-bottom:12px}
+  .legend span{display:flex; align-items:center; gap:6px}
+  .row{display:grid; grid-template-columns:26px minmax(0,1.25fr) minmax(0,2fr) 52px; gap:12px; align-items:center; padding:9px 0; border-top:1px solid #1b1b1b}
+  .row:first-of-type{border-top:0}
+  .rank{font-variant-numeric:tabular-nums; color:var(--dim2); font-size:13px; text-align:right}
+  .who{min-width:0}
+  .who .t{font-size:13.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .who .a{font-size:11.5px; color:var(--dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .stack{display:flex; height:14px; border-radius:3px; overflow:hidden; background:#1a1a1a}
+  .stack span{display:block; height:100%; transition:width .25s ease}
+  .total{font-variant-numeric:tabular-nums; font-size:13px; text-align:right; font-weight:700}
+  .flag{font-size:10.5px; color:#ffc878; display:block}
+  @media (max-width:600px){
+    .row{grid-template-columns:22px minmax(0,1fr) 44px; }
+    .row .stack{grid-column:2 / 4}
+    .slider{grid-template-columns:96px minmax(0,1fr) 40px}
+  }
+  .log{list-style:none; margin:0; padding:0; font-size:12.5px; color:var(--dim)}
+  .log li{padding:6px 0 6px 18px; position:relative; border-top:1px solid #1b1b1b}
+  .log li:first-child{border-top:0}
+  .log li::before{content:"→"; position:absolute; left:0; color:var(--green)}
+  .log li.none::before{content:"·"; color:var(--dim2)}
+  .two{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+  @media (max-width:820px){ .two{grid-template-columns:1fr} }
+  .formula{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12.5px; background:#0b0b0b; border:1px solid var(--line); border-radius:8px; padding:12px; color:#ddd; overflow-x:auto; white-space:pre; line-height:1.6}
+  .foot{color:#5a5a5a; font-size:12px; text-align:center; margin-top:40px}
+  :focus-visible{outline:2px solid var(--green); outline-offset:2px}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+</head>
+<body>
+<div class="page">
+  <a class="back" href="./case-study-1.html">← CS-01 · Spotify "Nearby" case study</a>
+  <p class="eyebrow">Live prototype · concept, not a Spotify product</p>
+  <h1>Spotify "Nearby": live prototype</h1>
+  <p class="intro">A Spotify-style Nearby screen powered by the real recommendation logic from the case study, running on a small sample catalogue. Each track gets a score of <b>personal taste × local context</b>. Then the guardrail rules (cold-start fallback, artist cap, long-tail reserve, weekly rotation) shape the final mix. Change any control and the phone re-ranks live. The breakdown underneath shows exactly why each track landed where it did.</p>
+
+  <div class="stage">
+    <div class="controls">
+
+      <section class="panel" aria-labelledby="h-who">
+        <h2 id="h-who">Who and where</h2>
+        <div class="field">
+          <span class="lbl" id="lbl-listener">Listener</span>
+          <div class="seg" id="listener" role="group" aria-labelledby="lbl-listener"></div>
+          <div class="hint" id="listener-hint"></div>
+        </div>
+        <div class="field">
+          <span class="lbl" id="lbl-city">Current city</span>
+          <div class="seg" id="city" role="group" aria-labelledby="lbl-city"></div>
+          <div class="hint" id="city-hint"></div>
+        </div>
+        <div class="field">
+          <span class="lbl" id="lbl-mode">Traveling or local?</span>
+          <div class="seg" id="mode" role="group" aria-labelledby="lbl-mode"></div>
+          <div class="slider" id="hours-wrap" style="margin-top:10px">
+            <label for="hours">Time in city</label>
+            <input type="range" id="hours" min="0" max="96" step="2" value="24" />
+            <output id="hours-out" for="hours">24h</output>
+          </div>
+          <div class="hint" id="ramp-hint"></div>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="h-w">
+        <h2 id="h-w">Blend weights</h2>
+        <div class="presets" id="presets"></div>
+        <div id="sliders"></div>
+        <div class="weightbar" id="weightbar" aria-hidden="true"></div>
+        <div class="hint" id="weight-hint" style="margin-bottom:14px"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="h-r">
+        <h2 id="h-r">Guardrail rules</h2>
+        <div class="toggles" id="rules"></div>
+        <div class="field" style="margin-top:14px">
+          <label for="week">Rotation week</label>
+          <select id="week"><option value="1">Week 1</option><option value="2">Week 2</option><option value="3">Week 3</option><option value="4">Week 4</option></select>
+          <div class="hint">With weekly rotation on, last week's top 3 stay as anchors and the rest are pushed down, so the mix changes from week to week.</div>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="h-p">
+        <h2 id="h-p">Location permission</h2>
+        <div class="seg" id="privacy" role="group" aria-labelledby="h-p"></div>
+        <div class="hint" id="privacy-hint" style="margin-bottom:16px"></div>
+      </section>
+    </div>
+
+    <div class="phone-col">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="status"><span>9:41</span><span>●●●● 🔋</span></div>
+          <div class="scroll" id="screen"></div>
+          <div class="nowplaying" id="np"></div>
+          <div class="tabbar">
+            <div class="tab active"><div class="tab-icon">⌂</div>Home</div>
+            <div class="tab"><div class="tab-icon">🔍</div>Search</div>
+            <div class="tab"><div class="tab-icon">☰</div>Your Library</div>
+            <div class="tab"><div class="tab-icon">＋</div>Create</div>
+          </div>
+        </div>
+      </div>
+      <p class="phone-cap">Tap a track to play it (visual only, no audio)</p>
+    </div>
+  </div>
+
+  <div class="results">
+    <div class="metrics" id="metrics"></div>
+
+    <section class="bd" aria-labelledby="h-bd">
+      <h2 id="h-bd">Why this ranking</h2>
+      <p class="hint">Each bar is a track's final score, split into what each signal contributed (component value × its weight).</p>
+      <div class="legend">
+        <span><i class="dot" style="background:var(--c-personal)"></i>Personal history</span>
+        <span><i class="dot" style="background:var(--c-local)"></i>Local popularity</span>
+        <span><i class="dot" style="background:var(--c-sim)"></i>Taste similarity</span>
+        <span><i class="dot" style="background:var(--c-fresh)"></i>Freshness + context</span>
+      </div>
+      <div id="breakdown"></div>
+    </section>
+
+    <div class="two">
+      <section class="bd" aria-labelledby="h-log">
+        <h2 id="h-log">What the rules did</h2>
+        <p class="hint">Every adjustment the guardrails made to this mix.</p>
+        <ul class="log" id="log"></ul>
+      </section>
+      <section class="bd" aria-labelledby="h-f">
+        <h2 id="h-f">The model</h2>
+        <p class="hint">Exactly what this page computes.</p>
+        <div class="formula" id="formula"></div>
+      </section>
+    </div>
+  </div>
+
+  <p class="foot">Fictional artists, streams and listeners, made up to illustrate the model. Not Spotify data, and not an actual Spotify product. The weights are the case study's hypothesis, not a tuned model.</p>
+</div>
+
+<script>
+/* =========================================================================
+   Data — all fictional
+   ========================================================================= */
+const GENRES = {
+  indie:"Indie", electronic:"Electronic", flamenco:"Flamenco-fusion", pop:"Pop", country:"Country",
+  americana:"Americana", bluegrass:"Bluegrass", folk:"Singer-songwriter", citypop:"City-pop",
+  jrock:"J-rock", hiphop:"Hip-hop", afrobeats:"Afrobeats", amapiano:"Amapiano", rnb:"R&B"
+};
+
+// features: [energy, acousticness, danceability, valence], each 0–1
+// streams: trailing-7-day plays inside a city's local listening index
+const TRACKS = [
+  // Barcelona
+  {id:"b1", title:"Cala Nocturna", artist:"Nit Elèctrica", home:"barcelona", g:{electronic:.8,pop:.2}, f:[.82,.1,.85,.45], streams:{barcelona:184000}, age:21, lt:false, art:["#8a2be2","#c724b1"], e:"🎧"},
+  {id:"b2", title:"Poble Sec 4AM", artist:"Nit Elèctrica", home:"barcelona", g:{electronic:1}, f:[.88,.05,.8,.35], streams:{barcelona:121000}, age:140, lt:false, art:["#5b1e9e","#a8209a"], e:"🌃"},
+  {id:"b3", title:"Duende Digital", artist:"Flama Roja", home:"barcelona", g:{flamenco:.7,electronic:.3}, f:[.7,.45,.7,.6], streams:{barcelona:156000}, age:35, lt:false, art:["#e2725b","#a13d2c"], e:"🎸"},
+  {id:"b4", title:"Rumba del Port", artist:"Flama Roja", home:"barcelona", g:{flamenco:.9,pop:.1}, f:[.65,.7,.75,.8], streams:{barcelona:98000}, age:300, lt:false, art:["#c4502f","#7a2412"], e:"💃"},
+  {id:"b5", title:"Llum de Tardor", artist:"Marea Blava", home:"barcelona", g:{indie:.9,folk:.1}, f:[.45,.6,.4,.4], streams:{barcelona:23000}, age:12, lt:true, art:["#2b7a78","#0f3d3a"], e:"🎵"},
+  {id:"b6", title:"Carrer Verdi", artist:"Els Fars", home:"barcelona", g:{indie:1}, f:[.6,.35,.5,.55], streams:{barcelona:14500}, age:60, lt:true, art:["#2e5a88","#14273d"], e:"🏮"},
+  {id:"b7", title:"Ona Sintètica", artist:"Rosa Vent", home:"barcelona", g:{electronic:.7,indie:.3}, f:[.7,.15,.7,.5], streams:{barcelona:9800}, age:8, lt:true, art:["#b0306b","#4d0f2e"], e:"🌊"},
+  {id:"b8", title:"Verano Infinito", artist:"Lía Mar", home:"barcelona", g:{pop:1}, f:[.75,.2,.8,.85], streams:{barcelona:240000}, age:50, lt:false, art:["#f2a541","#c45b1d"], e:"☀️"},
+  // Girona (small city — below the cold-start threshold)
+  {id:"g1", title:"Pedra i Riu", artist:"Ter Sound", home:"girona", g:{indie:.6,folk:.4}, f:[.4,.75,.35,.5], streams:{girona:2100}, age:30, lt:true, art:["#5f7f3a","#2b3b16"], e:"🪨"},
+  // Nashville
+  {id:"n1", title:"Backroad Blue", artist:"Cross Creek", home:"nashville", g:{country:.9,americana:.1}, f:[.6,.6,.5,.6], streams:{nashville:142000}, age:28, lt:false, art:["#c98a3c","#7a4b17"], e:"🤠"},
+  {id:"n2", title:"Gravel & Gold", artist:"Cross Creek", home:"nashville", g:{country:1}, f:[.65,.55,.55,.7], streams:{nashville:110000}, age:190, lt:false, art:["#b0782e","#5e3a0e"], e:"🛻"},
+  {id:"n3", title:"Five-String Sunday", artist:"Rye Hollow", home:"nashville", g:{bluegrass:.9,folk:.1}, f:[.55,.9,.5,.75], streams:{nashville:18000}, age:45, lt:true, art:["#8b5e3c","#4a2f18"], e:"🪕"},
+  {id:"n4", title:"Rust Belt Hymn", artist:"Dust & Wire", home:"nashville", g:{americana:.8,folk:.2}, f:[.5,.7,.35,.35], streams:{nashville:61000}, age:15, lt:false, art:["#b0433a","#5e211b"], e:"🎙️"},
+  {id:"n5", title:"Porch Light", artist:"June Calloway", home:"nashville", g:{folk:.8,country:.2}, f:[.3,.9,.25,.45], streams:{nashville:12500}, age:9, lt:true, art:["#d4a373","#6b4a2b"], e:"🕯️"},
+  {id:"n7", title:"Ryman Rain", artist:"The Hatch Sisters", home:"nashville", g:{americana:.5,folk:.5}, f:[.4,.85,.3,.5], streams:{nashville:8400}, age:16, lt:true, art:["#6d597a","#2d2236"], e:"🌧️"},
+  {id:"n6", title:"Neon Saddle", artist:"Brody Lane", home:"nashville", g:{country:.6,pop:.4}, f:[.8,.3,.7,.8], streams:{nashville:205000}, age:40, lt:false, art:["#e05d8a","#7a1f46"], e:"🌟"},
+  // Tokyo
+  {id:"t1", title:"Midnight Shuto", artist:"Yoru no Kaze", home:"tokyo", g:{citypop:.9,pop:.1}, f:[.6,.3,.75,.7], streams:{tokyo:198000}, age:33, lt:false, art:["#3a7bd5","#1c2f6b"], e:"🌆"},
+  {id:"t2", title:"Hikari Engine", artist:"Static Bloom", home:"tokyo", g:{jrock:1}, f:[.9,.1,.5,.55], streams:{tokyo:150000}, age:70, lt:false, art:["#d63a3a","#5c0f0f"], e:"⚡"},
+  {id:"t3", title:"Sakura Signal", artist:"Pastel☆Grid", home:"tokyo", g:{pop:.8,electronic:.2}, f:[.85,.1,.85,.9], streams:{tokyo:230000}, age:18, lt:false, art:["#ff8fb1","#c2185b"], e:"🌸"},
+  {id:"t4", title:"Shibuya Static", artist:"MC Tsuki", home:"tokyo", g:{hiphop:1}, f:[.75,.1,.8,.4], streams:{tokyo:21000}, age:25, lt:true, art:["#444","#111"], e:"🎤"},
+  {id:"t5", title:"Kissaten Tapes", artist:"Ame Library", home:"tokyo", g:{citypop:.6,indie:.4}, f:[.45,.5,.6,.6], streams:{tokyo:11000}, age:11, lt:true, art:["#9c7c5c","#4a3826"], e:"☕"},
+  {id:"t6", title:"Koenji Loop", artist:"Neko Tape", home:"tokyo", g:{electronic:.6,indie:.4}, f:[.65,.2,.7,.55], streams:{tokyo:7600}, age:10, lt:true, art:["#14b8a6","#134e4a"], e:"🐈"},
+  // Lagos
+  {id:"l1", title:"Island Fever", artist:"Tobi Ade", home:"lagos", g:{afrobeats:1}, f:[.75,.2,.9,.8], streams:{lagos:221000}, age:26, lt:false, art:["#f2b134","#b0631b"], e:"🌴"},
+  {id:"l2", title:"Log Drum Lekki", artist:"Kemi & DJ Sola", home:"lagos", g:{amapiano:.8,afrobeats:.2}, f:[.7,.15,.9,.65], streams:{lagos:176000}, age:14, lt:false, art:["#2fa36b","#0f4d31"], e:"🥁"},
+  {id:"l3", title:"Yaba Nights", artist:"Ayo Lagos", home:"lagos", g:{afrobeats:.6,rnb:.4}, f:[.55,.3,.75,.55], streams:{lagos:19000}, age:20, lt:true, art:["#7b3fa0","#33114d"], e:"🌙"},
+  {id:"l4", title:"Third Mainland", artist:"Femi Ojo", home:"lagos", g:{hiphop:.6,afrobeats:.4}, f:[.8,.1,.8,.5], streams:{lagos:13000}, age:7, lt:true, art:["#3d5a80","#1b263b"], e:"🌉"},
+  {id:"l5", title:"Ikoyi Blue", artist:"Zainab", home:"lagos", g:{rnb:.7,afrobeats:.3}, f:[.45,.35,.65,.5], streams:{lagos:64000}, age:55, lt:false, art:["#3a86ff","#1d3557"], e:"💙"},
+  {id:"l6", title:"Surulere Sunday", artist:"Bisi Strings", home:"lagos", g:{afrobeats:.7,folk:.3}, f:[.55,.6,.7,.8], streams:{lagos:9100}, age:22, lt:true, art:["#e9c46a","#8a5a1c"], e:"🎺"},
+  // Global favourites — not local to any index; personal history only
+  {id:"x1", title:"Northern Lights", artist:"Glass Harbour", home:null, g:{indie:1}, f:[.55,.4,.45,.45], streams:{}, age:400, lt:false, art:["#4d6a8a","#1e2b3a"], e:"🌌"},
+  {id:"x2", title:"Pulse Theory", artist:"Kilowatt", home:null, g:{electronic:1}, f:[.85,.05,.8,.5], streams:{}, age:220, lt:false, art:["#00b4d8","#03045e"], e:"🔊"},
+  {id:"x3", title:"Hometown Radio", artist:"Wade Miller", home:null, g:{country:1}, f:[.55,.65,.5,.65], streams:{}, age:500, lt:false, art:["#a3623a","#4a2a14"], e:"📻"},
+  {id:"x4", title:"Holler", artist:"Appalachia Kids", home:null, g:{bluegrass:.6,folk:.4}, f:[.5,.85,.45,.6], streams:{}, age:330, lt:false, art:["#6a994e","#283618"], e:"⛰️"},
+  {id:"x5", title:"Lagos to London", artist:"Kojo Kay", home:null, g:{afrobeats:.6,hiphop:.4}, f:[.78,.15,.85,.7], streams:{}, age:260, lt:false, art:["#e76f51","#6d2a1b"], e:"✈️"},
+  {id:"x6", title:"Block Party", artist:"Dre Atlas", home:null, g:{hiphop:1}, f:[.85,.1,.85,.6], streams:{}, age:180, lt:false, art:["#555","#1a1a1a"], e:"🏙️"},
+  {id:"x7", title:"Velvet", artist:"Nia Rose", home:null, g:{rnb:1}, f:[.45,.3,.7,.55], streams:{}, age:150, lt:false, art:["#9d4edd","#3c096c"], e:"🌹"},
+  {id:"x8", title:"Weekend Static", artist:"The Lumens", home:null, g:{pop:.6,indie:.4}, f:[.7,.25,.7,.75], streams:{}, age:90, lt:false, art:["#ff7b54","#7a2d16"], e:"📼"}
+];
+const T = Object.fromEntries(TRACKS.map(t => [t.id, t]));
+
+const COLD_START_MIN_USERS = 25000;
+const CITIES = {
+  barcelona:{name:"Barcelona", region:"catalonia", users:420000, mix:"Barcelona, Right Now", mixArt:["#c724b1","#3d1e6d"], mixE:"🌊",
+    events:[{name:"Flamenco Tablao", area:"El Raval", km:1.2, time:"9:30 PM", artist:"Flama Roja"},
+            {name:"Late electronic set", area:"Poble Sec", km:2.4, time:"11 PM", artist:"Nit Elèctrica"}]},
+  girona:{name:"Girona", region:"catalonia", users:9000, mix:"Girona, Right Now", mixArt:["#5f7f3a","#1f2b10"], mixE:"🏰",
+    events:[{name:"Acoustic night", area:"Barri Vell", km:0.8, time:"8 PM", artist:"Ter Sound"}]},
+  nashville:{name:"Nashville", region:"tennessee", users:310000, mix:"Nashville, Right Now", mixArt:["#c98a3c","#5e2f0f"], mixE:"🎻",
+    events:[{name:"Honky-tonk night", area:"Broadway", km:0.6, time:"8 PM", artist:"Brody Lane"},
+            {name:"Writers' round", area:"East Nashville", km:3.1, time:"7:30 PM", artist:"June Calloway"}]},
+  tokyo:{name:"Tokyo", region:"kanto", users:1900000, mix:"Tokyo, Right Now", mixArt:["#3a7bd5","#ff8fb1"], mixE:"🗼",
+    events:[{name:"City-pop revival night", area:"Shimokitazawa", km:4.0, time:"7 PM", artist:"Yoru no Kaze"},
+            {name:"Open-mic cypher", area:"Shibuya", km:1.5, time:"10 PM", artist:"MC Tsuki"}]},
+  lagos:{name:"Lagos", region:"lagos-state", users:880000, mix:"Lagos, Right Now", mixArt:["#f2b134","#2fa36b"], mixE:"🌍",
+    events:[{name:"Amapiano Sundowner", area:"Lekki", km:5.2, time:"6 PM", artist:"Kemi & DJ Sola"},
+            {name:"Live band night", area:"Yaba", km:2.2, time:"9 PM", artist:"Ayo Lagos"}]}
+};
+const REGIONS = { catalonia:"Catalonia", tennessee:"Tennessee", kanto:"Kantō", "lagos-state":"Lagos State" };
+
+const LISTENERS = {
+  maya:{name:"Maya", hint:"Visiting from London. Indie and electronic, some pop.",
+    g:{indie:.35, electronic:.35, pop:.15, rnb:.1, folk:.05}, f:[.7,.3,.7,.5], played:["Glass Harbour","Kilowatt","The Lumens"]},
+  sam:{name:"Sam", hint:"From Austin. Country, Americana and acoustic folk.",
+    g:{country:.4, americana:.25, folk:.2, bluegrass:.1, pop:.05}, f:[.5,.8,.35,.6], played:["Wade Miller","Appalachia Kids","Brody Lane"]},
+  priya:{name:"Priya", hint:"From Mumbai. Hip-hop, Afrobeats and R&B.",
+    g:{hiphop:.35, afrobeats:.3, rnb:.2, amapiano:.1, pop:.05}, f:[.75,.15,.85,.65], played:["Kojo Kay","Dre Atlas","Nia Rose","Tobi Ade"]}
+};
+
+const SIGNALS = [
+  {key:"personal", label:"Personal history", color:"var(--c-personal)"},
+  {key:"local",    label:"Local popularity", color:"var(--c-local)"},
+  {key:"sim",      label:"Taste similarity", color:"var(--c-sim)"},
+  {key:"fresh",    label:"Freshness + context", color:"var(--c-fresh)"}
+];
+const PRESETS = [
+  {label:"Case-study hypothesis 40/25/20/15", w:{personal:40, local:25, sim:20, fresh:15}},
+  {label:"Taste only (today)", w:{personal:67, local:0, sim:33, fresh:0}},
+  {label:"Local-heavy", w:{personal:20, local:50, sim:15, fresh:15}}
+];
+const MIX_SIZE = 8, ARTIST_CAP = 2, LONG_TAIL_SHARE = 0.3, ROTATION_PENALTY = 0.7, ROTATION_ANCHORS = 3;
+
+/* =========================================================================
+   State
+   ========================================================================= */
+const state = {
+  listener:"maya", city:"barcelona", mode:"auto", hours:24,
+  w:{...PRESETS[0].w},
+  rules:{coldStart:true, cap:true, longTail:true, rotation:true},
+  week:1, privacy:"approx", playing:null
+};
+
+/* =========================================================================
+   Model
+   ========================================================================= */
+const clamp01 = x => Math.max(0, Math.min(1, x));
+
+// Local listening index: population-level streams for the current place.
+// Cities below the active-user threshold fall back to their region (cold start).
+function localIndex(cityKey, coldStartOn){
+  const city = CITIES[cityKey];
+  const sparse = city.users < COLD_START_MIN_USERS;
+  const useRegion = sparse && coldStartOn;
+  const keys = useRegion ? Object.keys(CITIES).filter(k => CITIES[k].region === city.region) : [cityKey];
+  const streams = {};
+  for (const t of TRACKS) {
+    const s = keys.reduce((sum, k) => sum + (t.streams[k] || 0), 0);
+    if (s > 0) streams[t.id] = s;
+  }
+  const max = Math.max(1, ...Object.values(streams));
+  return {
+    sparse, useRegion, streams, max,
+    label: useRegion ? `Trending in ${REGIONS[city.region]}` : `Trending in ${city.name}`
+  };
+}
+
+function localRamp(){
+  if (state.mode !== "auto") return 1;
+  return 0.3 + 0.7 * clamp01(state.hours / 48);    // full local weight after 48h in-market
+}
+
+function effectiveWeights(w, ramp){
+  const raw = {personal:w.personal, local:w.local * ramp, sim:w.sim, fresh:w.fresh};
+  const sum = Object.values(raw).reduce((a, b) => a + b, 0) || 1;
+  return Object.fromEntries(Object.entries(raw).map(([k, v]) => [k, v / sum]));
+}
+
+function components(t, listener, index, tonightArtists){
+  const maxG = Math.max(...Object.values(listener.g));
+  const genreMatch = Object.entries(t.g).reduce((s, [g, v]) => s + v * (listener.g[g] || 0), 0) / maxG;
+  const played = listener.played.includes(t.artist) ? 1 : 0;
+  const personal = clamp01(0.65 * genreMatch + 0.35 * played);
+  const local = index.streams[t.id] ? Math.log1p(index.streams[t.id]) / Math.log1p(index.max) : 0;
+  const dist = Math.sqrt(t.f.reduce((s, v, i) => s + (v - listener.f[i]) ** 2, 0));
+  const sim = clamp01(1 - dist / 1.2);
+  const fresh = clamp01(0.6 * Math.exp(-t.age / 90) + 0.4 * (tonightArtists.has(t.artist) ? 1 : 0));
+  return {personal, local, sim, fresh};
+}
+
+function scoreAll(weights, index, listener, tonightArtists, cands){
+  return cands.map(t => {
+    const c = components(t, listener, index, tonightArtists);
+    const contrib = Object.fromEntries(SIGNALS.map(s => [s.key, c[s.key] * weights[s.key]]));
+    const total = Object.values(contrib).reduce((a, b) => a + b, 0);
+    return {t, c, contrib, total, isLocal: !!index.streams[t.id], flags:[]};
+  });
+}
+
+function buildMix(week, opts){
+  const {weights, index, listener, tonight, rules, cands} = opts;
+  const log = [];
+  let scored = scoreAll(weights, index, listener, tonight, cands);
+
+  if (rules.rotation && week > 1){
+    // keep last week's top tracks as anchors; push the rest down so new tracks rotate in
+    const prev = new Set(buildMix(week - 1, opts).mix.slice(ROTATION_ANCHORS).map(r => r.t.id));
+    let n = 0;
+    for (const r of scored) if (prev.has(r.t.id)) {
+      const k = r.total * (1 - ROTATION_PENALTY);
+      for (const key in r.contrib) r.contrib[key] *= ROTATION_PENALTY;
+      r.total -= k; r.rotated = true; n++;
+    }
+    if (n) log.push(`Rotation: kept Week ${week - 1}'s top ${ROTATION_ANCHORS} as anchors. Its other ${n} tracks scored ×${ROTATION_PENALTY} so new tracks can rotate in.`);
+  }
+
+  scored.sort((a, b) => b.total - a.total);
+
+  // artist cap
+  const mix = [], perArtist = {}, skipped = [];
+  for (const r of scored){
+    if (mix.length >= MIX_SIZE) break;
+    const n = perArtist[r.t.artist] || 0;
+    if (rules.cap && n >= ARTIST_CAP){ skipped.push(r); log.push(`Artist cap: dropped "${r.t.title}". ${r.t.artist} already has ${ARTIST_CAP} tracks in the mix.`); continue; }
+    perArtist[r.t.artist] = n + 1;
+    mix.push(r);
+  }
+
+  // long-tail reserve: at least 30% of slots for small local acts
+  if (rules.longTail){
+    const need = Math.ceil(MIX_SIZE * LONG_TAIL_SHARE);
+    const have = () => mix.filter(r => r.t.lt && r.isLocal).length;
+    const inMix = new Set(mix.map(r => r.t.id));
+    const pool = scored.filter(r => r.t.lt && r.isLocal && !inMix.has(r.t.id));
+    while (have() < need && pool.length){
+      const add = pool.shift();
+      // replace the lowest-scoring track that isn't itself a long-tail local act
+      let idx = -1;
+      for (let i = mix.length - 1; i >= 0; i--) if (!(mix[i].t.lt && mix[i].isLocal)) { idx = i; break; }
+      add.flags.push("Promoted by long-tail reserve");
+      if (mix.length < MIX_SIZE) { mix.push(add); log.push(`Long-tail reserve: added "${add.t.title}" by ${add.t.artist}, a small local act.`); }
+      else if (idx >= 0) { const out = mix[idx]; mix.splice(idx, 1, add); log.push(`Long-tail reserve: "${add.t.title}" by ${add.t.artist} replaced "${out.t.title}" to keep ${Math.round(LONG_TAIL_SHARE*100)}% of slots for small local acts.`); }
+      else break;
+    }
+    if (have() < need) log.push(`Long-tail reserve: only ${have()} small local acts are in this index, short of the ${need}-slot target.`);
+  }
+  return {mix, log};
+}
+
+const TASTE_ONLY = effectiveWeights({personal:67, local:0, sim:33, fresh:0}, 1);
+
+function run(){
+  const listener = LISTENERS[state.listener];
+  const city = CITIES[state.city];
+  const ramp = localRamp();
+  const nearbyOn = state.privacy !== "never";
+  const index = localIndex(state.city, state.rules.coldStart);
+  const tonight = new Set(nearbyOn ? city.events.map(e => e.artist) : []);
+  const weights = nearbyOn ? effectiveWeights(state.w, ramp) : TASTE_ONLY;
+
+  // baseline = today's taste-only recommendations: whole catalogue, no local signal,
+  // only the usual artist-diversity cap. Nearby's value is what it adds on top of this.
+  const base = buildMix(1, {weights:TASTE_ONLY, index:{streams:{}, max:1}, listener, tonight:new Set(), cands:TRACKS,
+    rules:{coldStart:false, cap:true, longTail:false, rotation:false}});
+  const baseIds = new Set(base.mix.map(r => r.t.id));
+
+  // Nearby candidates: everything in the local index + the listener's global favourites
+  const cands = TRACKS.filter(t => index.streams[t.id] || t.home === null);
+  const {mix, log} = nearbyOn
+    ? buildMix(Number(state.week), {weights, index, listener, tonight, rules:state.rules, cands})
+    : {mix:base.mix, log:[]};
+
+  if (state.mode === "auto" && ramp < 1 && nearbyOn) log.unshift(`Tourist ramp: after ${state.hours}h in ${city.name}, local popularity counts at ${Math.round(ramp*100)}% of its weight. It reaches full weight at 48h, or straight away if the listener says they're traveling or local.`);
+  if (index.sparse && state.rules.coldStart && nearbyOn) log.unshift(`Cold start: ${city.name} has ~${city.users.toLocaleString()} active users, below the ${COLD_START_MIN_USERS.toLocaleString()} threshold, so the model uses the ${REGIONS[city.region]} regional index, and the screen says so.`);
+  if (index.sparse && !state.rules.coldStart && nearbyOn) log.unshift(`Cold start is OFF: ${city.name}'s city-level index has only ${Object.keys(index.streams).length} track, so the "local" mix is almost all the listener's existing taste.`);
+  if (!nearbyOn) log.unshift("Location is set to Never: Nearby is off. The mix below is the plain taste-only recommendation from the whole catalogue, with no local signal and no Nearby rules.");
+
+  return {listener, city, index, ramp, weights, mix, log, baseIds, nearbyOn};
+}
+
+/* =========================================================================
+   Rendering
+   ========================================================================= */
+const $ = id => document.getElementById(id);
+const grad = a => `linear-gradient(145deg,${a[0]},${a[1]})`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmtK = n => n >= 1000 ? `${Math.round(n/1000)}K` : String(n);
+
+function segButtons(el, items, current, onPick){
+  el.innerHTML = items.map(([v, label]) => `<button type="button" data-v="${v}" aria-pressed="${v === current}">${label}</button>`).join("");
+  el.onclick = e => { const b = e.target.closest("button"); if (b) onPick(b.dataset.v); };
+}
+
+function renderControls(r){
+  segButtons($("listener"), Object.entries(LISTENERS).map(([k, l]) => [k, l.name]), state.listener, v => { state.listener = v; state.playing = null; update(); });
+  $("listener-hint").textContent = LISTENERS[state.listener].hint;
+  segButtons($("city"), Object.entries(CITIES).map(([k, c]) => [k, c.users < COLD_START_MIN_USERS ? `${c.name} <small>· small city</small>` : c.name]), state.city, v => { state.city = v; state.playing = null; update(); });
+  const c = CITIES[state.city];
+  $("city-hint").textContent = `~${c.users.toLocaleString()} active Spotify users here${c.users < COLD_START_MIN_USERS ? `, too few for a reliable city-level signal (cold-start case).` : "."}`;
+  segButtons($("mode"), [["auto","Not set"],["traveling","Traveling"],["local","Local"]], state.mode, v => { state.mode = v; update(); });
+  $("hours-wrap").style.display = state.mode === "auto" ? "" : "none";
+  $("hours-out").textContent = `${state.hours}h`;
+  $("ramp-hint").textContent = state.mode === "auto"
+    ? `Local popularity counts at ${Math.round(r.ramp*100)}% of its weight. It ramps up over the first 48h so a fresh tourist isn't flooded with local charts.`
+    : "Self-declared, so local signal counts at full weight from the start.";
+
+  $("weightbar").innerHTML = SIGNALS.map(s => `<span style="width:${(r.weights[s.key]*100).toFixed(1)}%;background:${s.color}"></span>`).join("");
+  $("weight-hint").textContent = "Effective blend after normalising" + (r.ramp < 1 && r.nearbyOn ? " and the tourist ramp" : "") + ": " +
+    SIGNALS.map(s => `${s.label.split(" ")[0]} ${Math.round(r.weights[s.key]*100)}%`).join(" · ");
+  for (const s of SIGNALS) $(`out-${s.key}`).textContent = state.w[s.key];
+
+  segButtons($("privacy"), [["never","Never"],["approx","Approximate"],["using","While using"],["always","Always"]], state.privacy, v => { state.privacy = v; update(); });
+  $("privacy-hint").textContent = {
+    never:"Nearby is off. No location is used, and recommendations fall back to taste only.",
+    approx:"Default. City-level only (\"Barcelona\"). Events show the neighbourhood, never a distance.",
+    using:"Precise location while the app is open: events show distance, and the city updates as you travel.",
+    always:"Also refreshes in the background, so the mix is ready when you land."
+  }[state.privacy];
+}
+
+function trackRow(r){
+  const tag = r.isLocal ? (r.t.lt ? `<span class="chip lt">Local · small act</span>` : `<span class="chip local">Local</span>`) : `<span class="chip taste">Your taste</span>`;
+  return `<li><button type="button" class="trk${state.playing === r.t.id ? " is-playing" : ""}" data-play="${r.t.id}">
+    <span class="trk-art" style="background:${grad(r.t.art)}">${r.t.e}</span>
+    <span class="trk-text"><span class="trk-title" style="display:block">${esc(r.t.title)}</span>
+    <span class="trk-meta" style="display:block">${tag}${esc(r.t.artist)}</span></span></button></li>`;
+}
+
+function renderPhone(r){
+  const s = $("screen");
+  if (!r.nearbyOn){
+    s.innerHTML = `<div class="off"><div class="big">📍</div><h3>Nearby is off</h3><p>Turn on approximate location to see what ${esc(r.city.name)} is listening to. We only use your city, never your exact address.</p><button type="button" id="turn-on">Use approximate location</button></div>`;
+    $("turn-on").onclick = () => { state.privacy = "approx"; update(); };
+  } else {
+    const trending = Object.entries(r.index.streams).sort((a, b) => b[1] - a[1]);
+    const seen = {}; const shelf = [];
+    for (const [id] of trending){ const t = T[id]; if ((seen[t.artist] || 0) >= 1) continue; seen[t.artist] = 1; shelf.push(t); if (shelf.length === 5) break; }
+    const precise = state.privacy === "using" || state.privacy === "always";
+    s.innerHTML = `
+      <div class="nb-top"><span class="nb-back">‹</span><span class="nb-pin"><span class="pulse"></span>${esc(r.city.name)}</span></div>
+      ${r.index.useRegion ? `<div class="nb-sub warn">Not enough local listening yet. Showing what's trending across ${esc(REGIONS[r.city.region])}.</div>` : `<div class="nb-sub">${state.mode === "local" ? "Local mode: what's new around you" : "What the city's playing, matched to you"}</div>`}
+      <div class="shelf-title">${esc(r.index.label)}</div>
+      <div class="hscroll">${shelf.map(t => `<button type="button" class="tile" data-play="${t.id}"><span class="art" style="background:${grad(t.art)}">${t.e}</span><span class="tile-label" style="display:block">${esc(t.title)}</span><span class="tile-sub" style="display:block">${esc(t.artist)} · ${fmtK(r.index.streams[t.id])} plays</span></button>`).join("")}</div>
+      <div class="shelf-title">Your local mix</div>
+      <div class="mix-card"><span class="mix-art" style="background:${grad(r.city.mixArt)}">${r.city.mixE}</span>
+        <div><div class="mix-title">${esc(r.city.mix)}</div><div class="mix-sub">${esc(r.listener.name)}'s taste + what ${r.index.useRegion ? esc(REGIONS[r.city.region]) : "the city"}'s playing · Week ${state.week}</div></div></div>
+      <ol class="tracks">${r.mix.map(trackRow).join("")}</ol>
+      <div class="shelf-title">Playing tonight</div>
+      ${r.city.events.map(e => `<div class="event"><div><div class="event-name">${esc(e.name)} · ${esc(e.artist)}</div><div class="event-meta">${esc(e.area)}${precise ? ` · ${e.km} km away` : ""}</div></div><div class="event-time">${e.time}</div></div>`).join("")}
+      ${state.privacy === "always" ? `<div class="bg-note">↻ Refreshed in the background 12 min ago</div>` : `<div class="bg-note"></div>`}`;
+  }
+  // now playing
+  const playing = T[state.playing] || (r.mix[0] && r.mix[0].t);
+  if (playing){
+    $("np").innerHTML = `<div class="np-progress" ${state.playing ? "" : 'style="animation:none;width:30%"'}></div><div class="np-art" style="background:${grad(playing.art)}">${playing.e}</div>
+      <div class="np-text"><div class="np-title">${esc(playing.title)} — ${esc(playing.artist)}</div><div class="np-artist">${r.nearbyOn ? `From Nearby: ${esc(r.city.name)}` : "From Made for you"}</div></div>
+      ${state.playing ? `<div class="eq"><span></span><span></span><span></span></div>` : ""}<div style="color:var(--dim)">♡</div>`;
+  }
+}
+
+function renderResults(r){
+  const n = r.mix.length || 1;
+  const local = r.mix.filter(x => x.isLocal).length;
+  const lt = r.mix.filter(x => x.isLocal && x.t.lt).length;
+  const fresh = r.mix.filter(x => !r.listener.played.includes(x.t.artist)).length;
+  const incr = r.mix.filter(x => !r.baseIds.has(x.t.id)).length;
+  const genres = new Set(r.mix.map(x => Object.entries(x.t.g).sort((a, b) => b[1] - a[1])[0][0])).size;
+  $("metrics").innerHTML = [
+    ["star", incr, `tracks a taste-only mix wouldn't have surfaced (the north star: incremental discovery)`],
+    ["", `${Math.round(local / n * 100)}%`, "local tracks in the mix"],
+    ["", `${Math.round(lt / n * 100)}%`, "small local acts (long tail)"],
+    ["", `${Math.round(fresh / n * 100)}%`, "artists new to this listener"],
+    ["", genres, "distinct genres"]
+  ].map(([cls, v, l]) => `<div class="metric ${cls}"><b>${v}</b><span>${l}</span></div>`).join("");
+
+  const top = Math.max(...r.mix.map(x => x.total), 0.01);
+  $("breakdown").innerHTML = r.mix.map((x, i) => `
+    <div class="row">
+      <span class="rank">${i + 1}</span>
+      <span class="who"><span class="t" style="display:block">${esc(x.t.title)}</span><span class="a" style="display:block">${esc(x.t.artist)} · ${x.isLocal ? (x.t.lt ? "local, small act" : "local") : "your taste"}${x.rotated ? " · rotated" : ""}</span>
+        ${x.flags.map(f => `<span class="flag">${esc(f)}</span>`).join("")}</span>
+      <span class="stack" role="img" aria-label="${SIGNALS.map(s => `${s.label} ${x.contrib[s.key].toFixed(2)}`).join(", ")}">${SIGNALS.map(s => `<span style="width:${(x.contrib[s.key] / top * 100).toFixed(1)}%;background:${s.color}" title="${s.label}: ${x.c[s.key].toFixed(2)} × weight = ${x.contrib[s.key].toFixed(3)}"></span>`).join("")}</span>
+      <span class="total">${x.total.toFixed(2)}</span>
+    </div>`).join("");
+
+  $("log").innerHTML = r.log.length ? r.log.map(l => `<li>${esc(l)}</li>`).join("") : `<li class="none">No adjustments. The raw scores already satisfy every rule.</li>`;
+
+  const w = r.weights;
+  $("formula").textContent =
+`score(track) =
+    ${w.personal.toFixed(2)} × personal   genre-history match + already-played artist
+  + ${w.local.toFixed(2)} × local      log(7-day streams in ${r.index.useRegion ? REGIONS[r.city.region] : r.city.name}) / log(max)
+  + ${w.sim.toFixed(2)} × similarity  1 − distance(energy, acoustic, dance, mood)
+  + ${w.fresh.toFixed(2)} × fresh      recency decay + "playing tonight" boost
+
+then, in order:
+  rotation    ${state.rules.rotation ? `last week's tracks (except top ${ROTATION_ANCHORS}) × ${ROTATION_PENALTY}` : "off"}
+  artist cap  ${state.rules.cap ? `max ${ARTIST_CAP} tracks per artist` : "off"}
+  long tail   ${state.rules.longTail ? `≥ ${Math.round(LONG_TAIL_SHARE*100)}% of ${MIX_SIZE} slots to small local acts` : "off"}
+  cold start  ${state.rules.coldStart ? `< ${COLD_START_MIN_USERS.toLocaleString()} users → regional index` : "off"}`;
+}
+
+function update(){
+  const r = run();
+  renderControls(r);
+  renderPhone(r);
+  renderResults(r);
+}
+
+/* ---------- one-time setup ---------- */
+$("sliders").innerHTML = SIGNALS.map(s => `
+  <div class="slider"><label for="w-${s.key}"><i class="dot" style="background:${s.color}"></i>${s.label}</label>
+  <input type="range" id="w-${s.key}" min="0" max="100" step="1" value="${state.w[s.key]}" />
+  <output id="out-${s.key}" for="w-${s.key}">${state.w[s.key]}</output></div>`).join("");
+for (const s of SIGNALS) $(`w-${s.key}`).addEventListener("input", e => { state.w[s.key] = Number(e.target.value); update(); });
+
+$("presets").innerHTML = PRESETS.map((p, i) => `<button type="button" data-i="${i}">${p.label}</button>`).join("");
+$("presets").onclick = e => {
+  const b = e.target.closest("button"); if (!b) return;
+  state.w = {...PRESETS[b.dataset.i].w};
+  for (const s of SIGNALS) $(`w-${s.key}`).value = state.w[s.key];
+  update();
+};
+
+const RULES = [
+  ["coldStart", "Cold-start fallback", "Small cities borrow their region's signal, and the screen says so."],
+  ["cap", "Artist cap", `No more than ${ARTIST_CAP} tracks from any one artist.`],
+  ["longTail", "Long-tail reserve", `${Math.round(LONG_TAIL_SHARE*100)}% of slots go to small local acts.`],
+  ["rotation", "Weekly rotation", "Stops the mix from becoming an echo chamber."]
+];
+$("rules").innerHTML = RULES.map(([k, t, d]) => `<label class="toggle"><input type="checkbox" id="r-${k}" ${state.rules[k] ? "checked" : ""} /><span><b>${t}</b><span>${d}</span></span></label>`).join("");
+for (const [k] of RULES) $(`r-${k}`).addEventListener("change", e => { state.rules[k] = e.target.checked; update(); });
+
+$("hours").addEventListener("input", e => { state.hours = Number(e.target.value); update(); });
+$("week").addEventListener("change", e => { state.week = Number(e.target.value); update(); });
+$("screen").addEventListener("click", e => { const b = e.target.closest("[data-play]"); if (b) { state.playing = b.dataset.play; update(); } });
+
+update();
+</script>
+</body>
+</html>
