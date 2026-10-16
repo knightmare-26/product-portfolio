@@ -583,37 +583,28 @@ p { margin: 0; }
 }
 .stage__inner { width: 100%; max-width: var(--maxw); margin-inline: auto; padding: 6rem var(--pad-x) 5rem; }
 
-/* ---- 1 · hero ---- */
-.hero-word {
-  position: relative; text-align: center; line-height: 0.9;
-  font-family: var(--font-display); font-weight: 800;
-  font-size: clamp(3.2rem, 14vw, 12.5rem); letter-spacing: 0.06em;
-  transform: scale(calc(1 + var(--p, 0) * 0.5));
-  opacity: clamp(0, calc(1.7 - var(--p, 0) * 2.2), 1);
+/* ---- 1 · hero: the name, which docks into the header as you scroll ---- */
+.hero-name {
+  margin: 0; text-align: center;
+  font-family: var(--font-display); font-weight: 800; line-height: 1;
+  font-size: clamp(3rem, 11.5vw, 10rem); letter-spacing: -0.03em;
 }
-.hero-word__main { position: relative; z-index: 1; }
-.hero-word__main span {
-  display: inline-block;
-  background: linear-gradient(180deg, #38bdf8, #0369a1);
-  -webkit-background-clip: text; background-clip: text; color: transparent;
-  animation: letterIn 0.9s var(--ease) both;
-  animation-delay: calc(var(--i) * 70ms);
-}
-.hero-word__echo {
-  position: absolute; inset: 0;
-  color: transparent; -webkit-text-stroke: 1.5px color-mix(in srgb, var(--accent) 40%, transparent);
-  transform: translate(calc(-4% - var(--p, 0) * 10%), 9%);
-}
-@keyframes letterIn { from { opacity: 0; transform: translateY(0.35em) rotate(6deg); } to { opacity: 1; transform: none; } }
+.hero-name__inner { display: inline-block; transform-origin: 0 0; will-change: transform; }
+.hero-name b { color: var(--accent-ink); font-weight: 800; }
+.hero-name .w { display: inline-block; animation: letterIn 0.9s var(--ease) both; animation-delay: calc(var(--i) * 120ms + 80ms); }
+@keyframes letterIn { from { opacity: 0; transform: translateY(0.35em) rotate(4deg); } to { opacity: 1; transform: none; } }
 .hero-sub {
-  margin-top: clamp(1.5rem, 4vw, 2.5rem); text-align: center;
-  font-family: var(--font-display); font-weight: 700; font-size: var(--step-2);
-  opacity: clamp(0, calc(1.3 - var(--p, 0) * 2.6), 1);
+  margin-top: clamp(1rem, 2.5vw, 1.75rem); text-align: center;
+  font-family: var(--font-body); font-weight: 500; font-size: var(--step-1); color: var(--muted);
+  opacity: clamp(0, calc(1 - var(--p, 0) * 3.2), 1);
+  transform: translateY(calc(var(--p, 0) * -1.5rem));
+  animation: subIn 0.9s var(--ease) 0.35s both;
 }
-.hero-sub small {
-  display: block; margin-top: 0.6rem;
-  font-family: var(--font-body); font-weight: 400; font-size: var(--step-0); color: var(--muted);
-}
+@keyframes subIn { from { opacity: 0; } to { opacity: 1; } }
+/* the header mark only appears once the name has docked into it */
+.story .s-mark { opacity: 0; pointer-events: none; transition: opacity 0.18s linear; }
+.story .s-mark.is-docked { opacity: 1; pointer-events: auto; }
+.story .s-mark small { transition: opacity 0.3s var(--ease); }
 .scroll-cue {
   position: absolute; left: 50%; bottom: 4.75rem; transform: translateX(-50%);
   font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase;
@@ -816,7 +807,8 @@ p { margin: 0; }
 .no-motion .pin { height: auto; }
 .no-motion .stage { position: relative; height: auto; min-height: 0; overflow: visible; }
 .no-motion .stage__inner { padding-block: 5rem 3rem; }
-.no-motion .hero-word, .no-motion .hero-sub, .no-motion .outro__word span { transform: none; opacity: 1; }
+.no-motion .hero-sub, .no-motion .outro__word span { transform: none; opacity: 1; }
+.no-motion .story .s-mark { opacity: 1; pointer-events: auto; }
 .no-motion .scroll-cue { display: none; }
 .no-motion .steps { min-height: 0; display: grid; gap: 2.5rem; }
 .no-motion .step { position: static; opacity: 1; transform: none; pointer-events: auto; }

@@ -77,6 +77,37 @@ document.querySelectorAll("[data-year]").forEach(function (el) {
     workPin.style.height = (window.innerHeight + shift) + "px";
   }
 
+  // hero name → header mark: measured once, then interpolated with scroll
+  const heroPin = document.getElementById("top");
+  const heroName = document.getElementById("hero-name");
+  const mark = document.querySelector(".s-mark");
+  const markName = document.querySelector(".s-mark__name");
+  let dock = null;
+  function measureDock() {
+    if (!heroPin || !heroName || !markName) return;
+    heroName.style.transform = "none";
+    const stage = heroPin.querySelector(".stage").getBoundingClientRect();
+    const r = heroName.getBoundingClientRect();
+    dock = {
+      relLeft: r.left - stage.left, relTop: r.top - stage.top,
+      scale: parseFloat(getComputedStyle(markName).fontSize) / parseFloat(getComputedStyle(heroName).fontSize)
+    };
+  }
+  const ease = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+  function dockName(p) {
+    if (!dock || still()) { if (mark) mark.classList.add("is-docked"); return; }
+    const t = ease(clamp(p / 0.62));
+    const stage = heroPin.querySelector(".stage").getBoundingClientRect();
+    const target = markName.getBoundingClientRect();
+    const x0 = stage.left + dock.relLeft, y0 = stage.top + dock.relTop;
+    const dx = (target.left - x0) * t, dy = (target.top - y0) * t;
+    const s = 1 + (dock.scale - 1) * t;
+    heroName.style.transform = "translate(" + dx.toFixed(2) + "px," + dy.toFixed(2) + "px) scale(" + s.toFixed(4) + ")";
+    const docked = t > 0.985;
+    heroName.style.opacity = docked ? "0" : "1";
+    mark.classList.toggle("is-docked", docked);
+  }
+
   function progress(pin) {
     const total = pin.offsetHeight - window.innerHeight;
     if (total <= 0) return 1;
@@ -97,6 +128,7 @@ document.querySelectorAll("[data-year]").forEach(function (el) {
       }
       if (pin.getBoundingClientRect().top <= mid) here = i;
     });
+    if (heroPin) dockName(progress(heroPin));
     const p = progress(pins[here]);
     const frac = pins.length > 1 ? clamp((here + (here === pins.length - 1 ? 0 : p)) / (pins.length - 1)) : 0;
     if (fill) fill.style.width = narrow.matches ? (frac * 100).toFixed(2) + "%" : "calc((100% - 0.9rem) * " + frac.toFixed(4) + ")";
@@ -129,11 +161,14 @@ document.querySelectorAll("[data-year]").forEach(function (el) {
   });
 
   sizeWork();
+  measureDock();
   window.addEventListener("scroll", onScroll, { passive: true });
-  window.addEventListener("resize", function () { sizeWork(); onScroll(); });
+  window.addEventListener("resize", function () { sizeWork(); measureDock(); onScroll(); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { measureDock(); frame(); });
   stacked.addEventListener("change", function () { sizeWork(); onScroll(); });
   window.addEventListener("load", function () {
     sizeWork();
+    measureDock();
     if (location.hash) land(location.hash.slice(1), false);
     frame();
   });
