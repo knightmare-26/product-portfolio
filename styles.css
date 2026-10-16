@@ -451,6 +451,70 @@ p { margin: 0; }
 .nav__end { display: flex; align-items: center; gap: clamp(0.75rem, 3vw, 1.5rem); }
 
 /* =======================================================
+   Case-study pages: portfolio chrome (matches the home page)
+   ======================================================= */
+.cs-page main { padding-top: 4.6rem; }
+.s-head--page {
+  pointer-events: auto;
+  padding-block: 0.8rem;
+  background: color-mix(in srgb, var(--ground) 84%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--hairline-2);
+}
+.s-links { display: flex; gap: 0.25rem; margin-right: 0.25rem; }
+.s-links a {
+  font-family: var(--font-display); font-weight: 600; font-size: 0.95rem;
+  text-decoration: none; color: var(--muted);
+  padding: 0.45rem 0.8rem; border-radius: 999px;
+  transition: background 0.2s var(--ease), color 0.2s var(--ease);
+}
+.s-links a:hover { background: var(--surface); color: var(--ink); }
+@media (max-width: 760px) { .s-links { display: none; } .cs-page .s-mark small { display: none; } }
+.read-bar { position: absolute; left: 0; right: 0; bottom: -1px; height: 3px; }
+.read-bar span { display: block; height: 100%; width: var(--read, 0%); background: var(--accent); }
+
+.cs-page .cs-hero { position: relative; isolation: isolate; padding-block: clamp(3.5rem, 8vw, 6rem) clamp(2.5rem, 5vw, 3.75rem); }
+.cs-page .cs-hero::before {
+  content: ""; position: absolute; z-index: -1; inset: 0 calc(50% - 50vw);
+  background: var(--sky-wash); border-bottom: 1px solid var(--hairline-2);
+}
+.cs-page .cs-hero h1 { font-weight: 800; font-size: clamp(2.3rem, 1.7rem + 3vw, 4.2rem); max-width: 22ch; letter-spacing: -0.02em; }
+.cs-page .cs-hero .lead { font-size: var(--step-1); max-width: 52ch; }
+.cs-page .cs-back {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.45rem 0.95rem; border-radius: 999px;
+  background: var(--ground); border: 1px solid var(--hairline);
+}
+.cs-page .cs-back:hover { border-color: var(--accent); }
+.cs-page .section { border-top: 0; }
+.cs-page .cs-meta {
+  background: var(--surface); border: 1px solid var(--hairline); border-radius: 20px;
+  padding: 1.25rem 1.4rem;
+}
+.cs-page .cs-meta a { color: var(--accent-ink); }
+.cs-page .cs-body h2 { font-weight: 800; }
+.cs-page .cs-body blockquote {
+  background: var(--accent-soft); border-left: 3px solid var(--accent);
+  border-radius: 0 16px 16px 0; padding: 1rem 1.25rem; color: var(--ink);
+}
+.cs-page .callout { border-radius: 18px; padding: 1.3rem 1.5rem; }
+.cs-page .metric-band { border-radius: 18px; }
+.cs-page .cs-figure { border-radius: 22px; }
+.cs-page .cs-table-wrap { border: 1px solid var(--hairline); border-radius: 18px; padding: 0.25rem 0.75rem; background: var(--ground); }
+.cs-page .cs-table tr:last-child td { border-bottom: 0; }
+.cs-page .cs-body a { color: var(--accent-ink); }
+.cs-page .cs-next { border-top: 0; }
+.cs-page .cs-next a {
+  font-size: var(--step-0); padding: 0.8rem 1.3rem; border-radius: 999px;
+  background: var(--surface); border: 1px solid var(--hairline); color: var(--ink);
+}
+.cs-page .cs-next a:last-child { background: var(--accent-ink); border-color: var(--accent-ink); color: #fff; }
+:root[data-theme="dark"] .cs-page .cs-next a:last-child { background: var(--accent); border-color: var(--accent); color: #0c2236; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .cs-page .cs-next a:last-child { background: var(--accent); border-color: var(--accent); color: #0c2236; } }
+.cs-page .cs-next a:hover { color: inherit; filter: brightness(1.05); }
+.cs-page .foot { border-top: 1px solid var(--hairline-2); }
+
+/* =======================================================
    Home: scroll story
    A chapter is a tall .pin section; its .stage sticks to the
    viewport while scroll progress (--p, 0→1) drives the scene.
@@ -776,7 +840,9 @@ p { margin: 0; }
     --step--1: 8.5pt; --step-0: 10pt; --step-1: 12.5pt; --step-2: 16pt; --step-3: 24pt;
   }
   body { background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .nav, .skip, .cs-back, .cs-next, .foot, .theme-toggle { display: none !important; }
+  .nav, .s-head, .skip, .cs-back, .cs-next, .foot, .theme-toggle { display: none !important; }
+  .cs-page main { padding-top: 0; }
+  .cs-page .cs-hero::before { display: none; }
   .wrap { max-width: none; padding-inline: 0; }
   .section { padding-block: 0; }
   .cs-hero { padding-block: 0 1.25rem; }

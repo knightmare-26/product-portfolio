@@ -40,6 +40,19 @@ document.querySelectorAll("[data-year]").forEach(function (el) {
   els.forEach(function (el) { io.observe(el); });
 })();
 
+// ---- Case studies: reading progress under the header -------------------
+(function () {
+  const bar = document.querySelector(".read-bar");
+  if (!bar) return;
+  const update = function () {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.setProperty("--read", (max > 0 ? Math.min(100, (window.scrollY / max) * 100) : 0).toFixed(2) + "%");
+  };
+  window.addEventListener("scroll", update, { passive: true });
+  window.addEventListener("resize", update);
+  update();
+})();
+
 // ---- Home: scroll story ------------------------------------------------
 // Each .pin chapter gets --p (0→1) as its sticky stage scrolls past.
 (function () {
