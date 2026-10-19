@@ -28,7 +28,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" />
 
-  <link rel="stylesheet" href="./styles.css?v=20261019b" />
+  <link rel="stylesheet" href="./styles.css?v=20261019g" />
 </head>
 <body class="story">
   <a class="skip" href="#about">Skip to content</a>
@@ -48,7 +48,6 @@
     <span class="s-rail__fill" aria-hidden="true"></span>
     <a href="#top"><span>Hello</span></a>
     <a href="#about"><span>About</span></a>
-    <a href="#products"><span>Try it</span></a>
     <a href="#case-studies"><span>Work</span></a>
     <a href="#contact"><span>Say hi</span></a>
   </nav>
@@ -73,18 +72,18 @@
           <div class="steps">
             <div class="step">
               <p class="eyebrow">About me</p>
-              <h2>A Program Management professional looking to transition to product management.</h2>
-              <p>Based in <strong>Pune, India</strong>. I studied Computer Science at Christ College, Pune, and now work at <strong>Aera Technology</strong> as a PMO, coordinating delivery across distributed teams in North America, Europe and India on a data-science org.</p>
+              <h2>A program management professional moving into product management.</h2>
+              <p>I'm based in <strong>Pune, India</strong>, and studied Computer Science at Christ College, Pune. At <strong>Aera Technology</strong>, I work in the PMO, coordinating delivery for a data-science organisation with teams across North America, Europe and India.</p>
             </div>
             <div class="step">
               <p class="eyebrow">Product work</p>
-              <h2>Shipping an agentic AI assistant, hands-on.</h2>
-              <p>Alongside my core role, I've spent the last year doing product work on the agentic and generative AI assistant our team ships, pitching in on discovery, specs, testing, and internal adoption. Now I'm moving into product management full-time, and I want to learn from a strong product team.</p>
+              <h2>Hands-on product work on an agentic AI assistant.</h2>
+              <p>Alongside my core role, I've spent the past year working on the agentic and generative AI assistant my team ships, contributing to discovery, specs, testing and internal adoption. I'm now looking for a full-time product management role, where I can learn from a strong product team.</p>
             </div>
             <div class="step">
               <p class="eyebrow">Learning</p>
               <h2>Always learning.</h2>
-              <p>Recent certifications in product analytics (Packt), product management (IBM, Pendo), AI fluency (Anthropic), generative AI, LLMs and responsible AI (Google), and Scrum and generative AI for project managers (PMI). Earlier: Python, IoT and Google Analytics.</p>
+              <p>My recent certifications cover product analytics (Packt); product management (IBM, Pendo); AI fluency (Anthropic); generative AI, LLMs and responsible AI (Google); and Scrum and generative AI for project managers (PMI). Earlier coursework included Python, IoT and Google Analytics.</p>
             </div>
           </div>
 
@@ -131,45 +130,28 @@
       </div>
     </section>
 
-    <!-- ============ 3 · TRY IT ============ -->
-    <section class="pin" id="products" style="--len:2.2" data-land="0.5">
-      <div class="stage split-stage">
-        <div class="split">
-          <div class="split__left">
-            <div class="blend">
-              <p class="blend__q" id="blend-q"><b>70%</b> your taste · <b>30%</b> the city</p>
-              <p class="blend__hint">You're in Barcelona. Drag to blend what you like with what the city's playing, then tap a song to hear it.</p>
-              <div class="blend__slider">
-                <label class="skip" for="blend">Blend between your taste and the city</label>
-                <input type="range" id="blend" min="0" max="100" value="30" />
-                <div class="blend__ends"><span>Your taste</span><span>The city</span></div>
-              </div>
-              <ol class="blend__list" id="blend-list"></ol>
-              <div class="blend__player" id="blend-player" aria-label="Spotify player"></div>
-            </div>
-          </div>
-          <div class="split__right">
-            <p class="eyebrow">Live prototype · CS-01</p>
-            <h2>Your taste × the city you're in.</h2>
-            <p>Spotify knows what you like. It doesn't know you just landed in Barcelona. "Nearby" blends the two, and the live prototype runs the full model: five cities, three listeners, privacy tiers and a per-track score breakdown.</p>
-            <a class="btn" href="./spotify-nearby-prototype.html">Open the live prototype →</a>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ 4 · WORK ============ -->
+    <!-- ============ 3 · WORK ============ -->
     <section class="pin work-pin" id="case-studies" data-land="0">
       <div class="stage work-stage">
         <div class="track" id="track">
           <div class="track__intro">
-            <p class="eyebrow">Case studies</p>
-            <h2>Written up like a mini PRD.</h2>
-            <p>Context, decisions, outcome. Keep scrolling →</p>
+            <p class="eyebrow">Work</p>
+            <h2>Built, shipped, written up.</h2>
+            <p>One live product, plus case studies written like a mini PRD. Keep scrolling →</p>
           </div>
 
-          <a class="panel" href="./case-study-1.html">
-            <span class="panel__num">01</span>
+          <a class="panel panel--featured t-f1" href="./shif1-up.html">
+            <span class="panel__top"><span class="panel__flag">Project · Live</span></span>
+            <span class="panel__kind">Full-stack ML product</span>
+            <h3>Shif1 UP: Formula 1 analytics and race predictions</h3>
+            <p>75 years of F1 data, lap-by-lap replays and ML predictions for qualifying, races and the title fight. Every prediction is checked against the real result, and it all runs on free hosting.</p>
+            <span class="panel__foot">
+              <span class="panel__tags">LightGBM / Monte Carlo / FastAPI / React / GitHub Actions</span>
+              <span class="panel__metric"><b>67%</b><span>winners called, 86 races</span></span>
+            </span>
+          </a>
+
+          <a class="panel t-spotify" href="./case-study-1.html">
             <span class="panel__kind">Concept study</span>
             <h3>Spotify "Nearby": context-aware local music discovery</h3>
             <p>A self-initiated concept: blending a listener's personal taste with what a city is actually streaming, scoped to one new surface rather than a platform redesign.</p>
@@ -179,8 +161,7 @@
             </span>
           </a>
 
-          <a class="panel" href="./case-study-2.html">
-            <span class="panel__num">02</span>
+          <a class="panel t-claude" href="./case-study-2.html">
             <span class="panel__kind">Product teardown</span>
             <h3>Claude Code: what's under the hood, and where it breaks</h3>
             <p>A product teardown of Anthropic's coding agent: the model-plus-harness engine, where it lifts team productivity, where it falls short, and the gaps I'd prioritise.</p>
@@ -204,7 +185,7 @@
       </div>
     </section>
 
-    <!-- ============ 5 · CONTACT ============ -->
+    <!-- ============ 4 · CONTACT ============ -->
     <section class="pin" id="contact" style="--len:1.7" data-land="0.6">
       <div class="stage">
         <div class="stage__inner outro">
@@ -224,7 +205,6 @@
     </section>
   </main>
 
-  <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
-  <script src="./main.js?v=20261016g"></script>
+  <script src="./main.js?v=20261019a"></script>
 </body>
 </html>
